@@ -18,14 +18,14 @@ namespace DesignPatterns.Core.Factory
         /// <param name="animalType"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static Animal CreateAnimal(string animalType)
+        public static Animal CreateAnimal(string animalType, string name, double width)
         {
             switch (animalType.ToLower())
             {
                 case "dog":
-                    return new Dog();
+                    return Dog.Create(name, width);
                 case "cat":
-                    return new Cat();
+                    return Cat.Create(name, width);
                 default:
                     throw new ArgumentException("Unknown animal type");
             }

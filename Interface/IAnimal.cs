@@ -9,6 +9,12 @@ namespace DesignPatterns.Core.Interface
     public interface IAnimal
     {
         /// <summary>
+        /// Gets the width of the animal.
+        /// </summary>
+        /// <returns></returns>
+        double GetWidth();
+
+        /// <summary>
         /// Makes a sound specific to the animal.
         /// </summary>
         void MakeSound();

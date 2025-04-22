@@ -10,11 +10,24 @@ namespace DesignPatterns.Core.Models
     public abstract class Animal : IAnimal
     {
         private string _name;
+        private double _width;
+
+        protected Animal(string name, double width)
+        {
+            SetName(name);
+            SetWidth(width);
+        }
 
         public string Name
         {
             get { return _name; }
             set { SetName(value); }
+        }
+
+        public double Width
+        {
+            get { return _width; }
+            set { SetWidth(value); }
         }
 
         public void SetName(string name)
@@ -27,7 +40,40 @@ namespace DesignPatterns.Core.Models
             _name = char.ToUpper(name[0]) + name.Substring(1);
         }
 
+        public void SetWidth(double width)
+        {
+            if (width <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), "Width cannot be negative nor zero");
+
+            _width = width;
+        }
+
+        /// <summary>
+        /// The behavior of the animal when it moves.
+        /// </summary>
+        public IMoveBehavior MoveBehavior { get; set; }
+
+        /// <summary>
+        /// The width of the animal.
+        /// </summary>
+        public void PerformMove(double gapWidth)
+        {
+            if (MoveBehavior == null)
+                throw new InvalidOperationException("Move behavior is not set");
+
+            MoveBehavior.MoveThroughGap(GetWidth(), gapWidth);
+        }
+
+        /// <inheritdoc/> 
+        public double GetWidth()
+        {
+            return Width;
+        }
+
+        /// <inheritdoc/>
         public abstract void MakeSound();
+
+        /// <inheritdoc/>
         public abstract void Move();
     }
 }
