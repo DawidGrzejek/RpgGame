@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RpgGame.Domain.Entities.Characters.Player
 {
-    internal class Rouge
+    public class Rouge
     {
     }
 }

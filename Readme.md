@@ -1,136 +1,117 @@
-# Object-Oriented Programming: The Three Major Pillars
+# RPG Game Domain
 
-This project demonstrates the implementation of the three major pillars of object-oriented programming (OOP) through a simple animal hierarchy and factory pattern.
+This project defines the core domain logic for an RPG game, including characters, items, quests, and game mechanics. It is built using C# 12.0 and targets .NET 8. The architecture is modular and extensible, leveraging interfaces, abstract classes, and enums to represent various game elements.
 
-## 1. Encapsulation
+---
 
-Encapsulation involves hiding the internal state and functionality of an object and only exposing what is necessary through a well-defined interface. This protects the integrity of the object and controls how its data is accessed or modified.
+## **Project Structure**
 
-### Key Concepts of Encapsulation:
+The project is organized into the following key components:
 
-- **Data Hiding**: Keeps the internal workings of a class hidden from the outside world using access modifiers like `private` and `protected`.
-- **Controlled Access**: Uses public methods (getters and setters) to access and modify private fields, allowing for validation logic.
-- **Improved Maintainability**: Makes code easier to manage as changes to internal implementation don't affect external code.
+### **1. Interfaces**
+Interfaces define the contracts for various entities in the game, ensuring consistent behavior across implementations.
 
-### Example from our project:
+#### **Characters**
+- **`ICharacter`**: Base interface for all characters.
+  - Properties: `Name`, `Health`, `MaxHealth`, `Level`, `IsAlive`.
+  - Methods: `Attack`, `TakeDamage`, `Heal`, `LevelUp`.
 
-The `Animal` abstract class encapsulates the implementation details, while exposing only the necessary methods through the `IAnimal` interface.
+- **`INonPlayerCharacter`**: Extends `ICharacter` for NPC-specific behavior.
+  - Properties: `IsFriendly`, `Dialogue`.
+  - Methods: `Interact`.
 
-```csharp
-public abstract class Animal : IAnimal
-{
-    // Encapsulated implementation details would go here
-    public abstract void MakeSound();
-    public abstract void Move();
-}
-```
+- **`IPlayerCharacter`**: Extends `ICharacter` for player-specific behavior.
+  - Properties: `Experience`, `ExperienceToNextLevel`, `Inventory`.
+  - Methods: `GainExperience`, `EquipItem`, `UseItem`, `UseSpecialAbility`.
 
-## 2. Inheritance
+#### **Items**
+- **`IItem`**: Base interface for all items.
+  - Properties: `Name`, `Description`, `Value`, `Type`.
 
-Inheritance allows a class to inherit properties and methods from another class, enabling code reuse and establishing an "is-a" relationship between classes.
+- **`IEquipment`**: Extends `IItem` for equippable items.
+  - Properties: `Slot`, `BonusValue`.
+  - Methods: `OnEquip`, `OnUnequip`.
 
-### Key Concepts of Inheritance:
+- **`IConsumable`**: Extends `IItem` for consumable items.
+  - Methods: `Consume`.
 
-- **Base and Derived Classes**: A derived class (child) inherits from a base class (parent).
-- **Code Reuse**: Avoids duplicating code by inheriting shared functionality.
-- **Method Overriding**: Allows derived classes to provide specific implementations of methods defined in the base class.
+#### **Inventory**
+- **`IInventory`**: Manages a character's inventory.
+  - Properties: `Items`, `Capacity`, `Gold`.
+  - Methods: `AddItem`, `RemoveItem`, `AddGold`, `SpendGold`.
 
-### Example from our project:
+#### **Quests**
+- **`IQuest`**: Represents a quest in the game.
+  - Properties: `Name`, `Description`, `IsCompleted`.
+  - Methods: `Complete`.
 
-Both `Dog` and `Cat` classes inherit from the `Animal` abstract class:
+---
 
-```csharp
-public class Dog : Animal
-{
-    public override void MakeSound()
-    {
-        Console.WriteLine("Woof!");
-    }
-    
-    public override void Move()
-    {
-        Console.WriteLine("The dog runs.");
-    }
-}
+### **2. Enums**
+Enums categorize various game elements for better readability and maintainability.
 
-public class Cat : Animal
-{
-    public override void MakeSound()
-    {
-        Console.WriteLine("Meow!");
-    }
-    
-    public override void Move()
-    {
-        Console.WriteLine("The cat jumps.");
-    }
-}
-```
+- **`CharacterType`**: Defines types of characters (e.g., Warrior, Mage).
+- **`DamageType`**: Defines types of damage (e.g., Physical, Magical).
+- **`EnemyType`**: Defines types of enemies (e.g., Goblin, Dragon).
+- **`EquipmentSlot`**: Defines equipment slots (e.g., Head, Chest).
+- **`ItemType`**: Defines types of items (e.g., Weapon, Potion).
+- **`LocationType`**: Defines types of locations (e.g., Town, Dungeon).
 
-## 3. Polymorphism
+---
 
-Polymorphism allows you to use a base class or interface to refer to objects of derived classes, letting you write code that works with objects of different classes in a uniform way.
+### **3. Entities**
+Entities provide concrete implementations of the interfaces and define the behavior of game elements.
 
-### Key Concepts of Polymorphism:
+#### **Characters**
+- **`Character`**: Abstract base class implementing `ICharacter`.
+  - Handles common character logic like attacking, taking damage, healing, and leveling up.
+  - Includes protected methods for customization (e.g., `OnBeforeAttack`, `OnDeath`).
 
-- **Interface-Based**: Using interfaces to define common behavior across different classes.
-- **Runtime Method Resolution**: The appropriate method implementation is determined at runtime.
-- **Flexibility**: Code can work with different object types without knowing their specific class.
+- **`NonPlayerCharacter`**: Abstract class extending `Character` for NPCs.
+  - Adds properties like `IsFriendly` and `Dialogue`.
+  - Defines interaction behavior with players.
 
-### Example from our project:
+- **`PlayerCharacter`**: Concrete class for player-controlled characters.
+  - Implements inventory and experience management.
 
-We can use polymorphism with the `IAnimal` interface:
+- **`Enemy`**: Abstract class extending `NonPlayerCharacter` for enemies.
+  - Adds properties like `ExperienceReward` and `LootTable`.
+  - Includes methods for dropping loot and initiating combat.
 
-```csharp
-public class Program
-{
-    public static void Main()
-    {
-        IAnimal myDog = new Dog();
-        IAnimal myCat = new Cat();
-        
-        // Both objects are treated as IAnimal but behave differently
-        myDog.MakeSound(); // Outputs: Woof!
-        myDog.Move();      // Outputs: The dog runs.
-        
-        myCat.MakeSound(); // Outputs: Meow!
-        myCat.Move();      // Outputs: The cat jumps.
-    }
-}
-```
+---
 
-## Factory Pattern Implementation
+## **Key Features**
+- **Modular Design**: Interfaces and abstract classes allow for easy extension and customization.
+- **Encapsulation**: Fields are protected, with controlled access through properties.
+- **Polymorphism**: Enables treating different character types uniformly via the `ICharacter` interface.
+- **Extensibility**: New character types, items, or quests can be added with minimal changes to existing code.
 
-This project also demonstrates the Factory Pattern, which is a creational design pattern that provides an interface for creating objects without specifying their concrete classes.
+---
 
-```csharp
-public class AnimalFactory
-{
-    public static Animal CreateAnimal(string animalType)
-    {
-        switch (animalType.ToLower())
-        {
-            case "dog":
-                return new Dog();
-            case "cat":
-                return new Cat();
-            default:
-                throw new ArgumentException("Unknown animal type");
-        }
-    }
-}
-```
+## **Getting Started**
+1. Clone the repository.
+2. Open the solution in Visual Studio 2022.
+3. Build the project to ensure all dependencies are resolved.
+4. Explore the `Entities`, `Interfaces`, and `Enums` folders to understand the domain logic.
 
-### Usage Example:
+---
 
-```csharp
-// Creating animals using the factory
-Animal dog = AnimalFactory.CreateAnimal("dog");
-Animal cat = AnimalFactory.CreateAnimal("cat");
+## **Future Enhancements**
+- Add more character types (e.g., BossEnemy, Merchant).
+- Implement advanced combat mechanics (e.g., special abilities, status effects).
+- Expand the quest system with branching storylines.
+- Introduce multiplayer support.
 
-// Polymorphic behavior
-dog.MakeSound(); // Outputs: Woof!
-cat.MakeSound(); // Outputs: Meow!
-```
+---
 
-This factory pattern implementation demonstrates how encapsulation, inheritance, and polymorphism work together in a practical application.
+## **Contributing**
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes with clear messages.
+4. Submit a pull request for review.
+
+---
+
+## **License**
+This project is licensed under the MIT License. See the `LICENSE` file for details.

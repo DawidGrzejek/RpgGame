@@ -84,8 +84,8 @@ namespace RpgGame.Domain.Entities.Characters.Base
             }
 
             // Remove item from inventory and equip it
-            _inventory.RemoveItem(item);
-            _equippedItems[item.Slot] = item;
+           _inventory.RemoveItem(item);
+           _equippedItems[item.Slot] = item;
             item.OnEquip(this);
 
             OnItemEquipped(item);
@@ -104,7 +104,7 @@ namespace RpgGame.Domain.Entities.Characters.Base
                 Console.WriteLine($"Cannot use {item.Name}: Item not in inventory");
                 return;
             }
-
+            
             if (item is IConsumable consumable)
             {
                 _inventory.RemoveItem(item);

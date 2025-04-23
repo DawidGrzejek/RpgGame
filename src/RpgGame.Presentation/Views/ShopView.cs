@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace RpgGame.Presentation.Views
 {
     /// <summary>
-    /// Shows the player's items, equipment, and gold. Processes commands to use, equip, or drop items.
+    /// Handles merchant interactions, displaying items for sale and the buying/selling interface.
     /// </summary>
-    internal class InventoryView
+    internal class ShopView
     {
     }
 }
