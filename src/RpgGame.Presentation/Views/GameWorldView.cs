@@ -10,12 +10,14 @@ namespace RpgGame.Presentation.Views
     /// <summary>
     /// The main exploration interface showing the current location description, available actions, and player status.
     /// </summary>
-    public class GameWorldView
+    public class GameWorldView : IDisposable
     {
         private readonly Character _player;
         private readonly IGameWorld _gameWorld;
         private readonly GameSaveService _gameSaveService;
+        private readonly AutoSaveService _autoSaveService;
         private ILocation _currentLocation;
+        private bool _disposed = false;
 
         public GameWorldView(Character player, GameWorld gameWorld, GameSaveService gameSaveService)
         {
@@ -23,6 +25,10 @@ namespace RpgGame.Presentation.Views
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
             _gameSaveService = gameSaveService ?? throw new ArgumentNullException(nameof(gameSaveService));
             _currentLocation = gameWorld.StartLocation;
+
+            // Initialize autosave service
+            _autoSaveService = new AutoSaveService(_gameSaveService);
+            _autoSaveService.Initialize(_player, _currentLocation);
         }
 
         /// <summary>
@@ -130,6 +136,7 @@ namespace RpgGame.Presentation.Views
             return action;
         }
 
+        // Add this method to update the autosave service when the location changes
         private void SetCurrentLocation(ILocation newLocation)
         {
             if (newLocation == null)
@@ -137,6 +144,12 @@ namespace RpgGame.Presentation.Views
 
             _currentLocation = newLocation;
             Console.WriteLine($"\nYou travel to {_currentLocation.Name}...");
+
+            // Update the autosave service with the new location
+            _autoSaveService.UpdateGameState(_player, _currentLocation);
+
+            // Trigger an immediate autosave when location changes
+            _autoSaveService.TriggerImmediateSave();
         }
 
         // Method to save the current game
@@ -266,5 +279,34 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine("Press any key to return to the main menu...");
             Console.ReadKey();
         }
+
+        // Make sure to dispose of the autosave service
+        public void Dispose()
+        {
+            _autoSaveService?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Release managed resources here if any.  
+                }
+
+                // Release unmanaged resources here if any.  
+
+                _disposed = true;
+            }
+        }
+
+        ~GameWorldView()
+        {
+            Dispose(false);
+        }
+
     }
 }

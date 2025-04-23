@@ -16,7 +16,9 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         {
             _context = new GameDbContext();
             // Ensure database is created
-            _context.Database.EnsureCreated();
+            Console.WriteLine("Attempting to create database...");
+            bool created = _context.Database.EnsureCreated();
+            Console.WriteLine($"Database created: {created}");
         }
 
         public bool SaveGame(string saveName, Character playerCharacter, ILocation currentLocation, int playTime)

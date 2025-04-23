@@ -54,6 +54,7 @@ namespace RpgGame.Presentation
                     Console.WriteLine("===================================");
                     Console.WriteLine();
                     Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                    Console.WriteLine($"Stack trace: {ex.StackTrace}");
                     Console.WriteLine();
                     Console.WriteLine("Press any key to exit...");
                     Console.ReadKey();
@@ -78,9 +79,11 @@ namespace RpgGame.Presentation
             // Start a new play time session
             gameSaveService.StartNewSession();
 
-            // Start game with the character and world
-            var gameWorldView = new GameWorldView(playerCharacter, gameWorld, gameSaveService);
-            gameWorldView.Show();
+            // Start game with the character and world - using the using statement for proper disposal
+            using (var gameWorldView = new GameWorldView(playerCharacter, gameWorld, gameSaveService))
+            {
+                gameWorldView.Show();
+            }
         }
 
         // This method loads a saved game
@@ -91,9 +94,11 @@ namespace RpgGame.Presentation
 
             if (loadSuccessful && playerCharacter != null && currentLocation != null)
             {
-                // Start game with the loaded character and location
-                var gameWorldView = new GameWorldView(playerCharacter, gameWorld, gameSaveService);
-                gameWorldView.Show();
+                // Start game with the loaded character and location - using the using statement for proper disposal
+                using (var gameWorldView = new GameWorldView(playerCharacter, gameWorld, gameSaveService))
+                {
+                    gameWorldView.Show();
+                }
             }
         }
 
@@ -104,7 +109,7 @@ namespace RpgGame.Presentation
             saveLoadView.ShowDeleteSaveInterface();
         }
 
-        // This method shows the options menu (not implemented in this version)
+        // This method shows the options menu
         static void ShowOptions()
         {
             Console.Clear();
@@ -112,9 +117,89 @@ namespace RpgGame.Presentation
             Console.WriteLine("=            OPTIONS              =");
             Console.WriteLine("===================================");
             Console.WriteLine();
-            Console.WriteLine("Options menu not implemented yet.");
+            Console.WriteLine("1. Game Settings");
+            Console.WriteLine("2. Controls");
+            Console.WriteLine("3. About");
+            Console.WriteLine("4. Back to Main Menu");
+
+            int option = GetPlayerInputOption(1, 4);
+
+            switch (option)
+            {
+                case 1: // Game Settings
+                    ShowGameSettings();
+                    break;
+                case 2: // Controls
+                    ShowControls();
+                    break;
+                case 3: // About
+                    ShowAbout();
+                    break;
+                case 4: // Back
+                    return;
+            }
+        }
+
+        // Helper method to get player input within a range
+        static int GetPlayerInputOption(int min, int max)
+        {
+            int option = -1;
+            do
+            {
+                Console.Write($"\nSelect an option ({min}-{max}): ");
+                if (int.TryParse(Console.ReadLine(), out int input) && input >= min && input <= max)
+                {
+                    option = input;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid option. Please try again.");
+                }
+            } while (option == -1);
+
+            return option;
+        }
+
+        // Additional option menu methods
+        static void ShowGameSettings()
+        {
+            Console.Clear();
+            Console.WriteLine("===================================");
+            Console.WriteLine("=          GAME SETTINGS          =");
+            Console.WriteLine("===================================");
             Console.WriteLine();
-            Console.WriteLine("Press any key to continue...");
+            Console.WriteLine("Game settings would be configured here.");
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+        }
+
+        static void ShowControls()
+        {
+            Console.Clear();
+            Console.WriteLine("===================================");
+            Console.WriteLine("=            CONTROLS             =");
+            Console.WriteLine("===================================");
+            Console.WriteLine();
+            Console.WriteLine("Number keys - Select menu options");
+            Console.WriteLine("Enter - Confirm selection");
+            Console.WriteLine("Any key - Continue through messages");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to return...");
+            Console.ReadKey();
+        }
+
+        static void ShowAbout()
+        {
+            Console.Clear();
+            Console.WriteLine("===================================");
+            Console.WriteLine("=             ABOUT               =");
+            Console.WriteLine("===================================");
+            Console.WriteLine();
+            Console.WriteLine("Simple Console RPG");
+            Console.WriteLine("Version 1.0");
+            Console.WriteLine("A text-based role-playing game.");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to return...");
             Console.ReadKey();
         }
     }

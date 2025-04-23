@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RpgGame.Application.DTOs
+namespace RpgGame.Application.Serialization.DTOs
 {
-    internal class CharacterDto
+    internal class GameStateDto
     {
     }
 }

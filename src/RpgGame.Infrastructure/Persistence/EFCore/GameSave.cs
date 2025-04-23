@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using RpgGame.Application.Serialization.DTOs;
+using RpgGame.Application.Serialization.Mappers;
 using RpgGame.Domain.Entities.Characters.Base;
 using System;
 using System.Collections.Generic;
@@ -22,12 +24,17 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         public int PlayTime { get; set; }
 
         [NotMapped]
+        public PlayerCharacterDto PlayerCharacterData
+        {
+            get => JsonConvert.DeserializeObject<PlayerCharacterDto>(PlayerCharacterJson);
+            set => PlayerCharacterJson = JsonConvert.SerializeObject(value);
+        }
+
+        [NotMapped]
         public Character PlayerCharacter
         {
-            get => JsonConvert.DeserializeObject<Character>(PlayerCharacterJson,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-            set => PlayerCharacterJson = JsonConvert.SerializeObject(value,
-                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            get => PlayerMapper.FromDto(PlayerCharacterData);
+            set => PlayerCharacterData = PlayerMapper.ToDto(value as PlayerCharacter);
         }
     }
 }
