@@ -1,10 +1,9 @@
-﻿using RpgGame.Domain.Interfaces.Characters;
+﻿using RpgGame.Domain.Entities.Inventory;
+using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
+using RpgGame.Domain.Interfaces.Items;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RpgGame.Domain.Entities.Characters.Player
 {
@@ -15,6 +14,10 @@ namespace RpgGame.Domain.Entities.Characters.Player
         private const int _baseStrength = 20;
         private const int _baseDefense = 10;
 
+        // Warrior-specific inventory defaults
+        private const int _defaultInventoryCapacity = 20; // Warriors can carry more items
+        private const int _defaultStartingGold = 50;
+
         /// <summary>
         /// Constructor for the Warrior class
         /// </summary>
@@ -24,7 +27,30 @@ namespace RpgGame.Domain.Entities.Characters.Player
             // Warrior-specific initialization can go here
         }
 
-        /// Factory method to create a Warrior instance
+        /// <summary>
+        /// Factory method to create a Warrior instance with a default inventory
+        /// </summary>
+        /// <param name="name">The character's name</param>
+        /// <returns>A new Warrior instance</returns>
+        public static Warrior Create(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+            }
+
+            // Create default warrior inventory
+            var defaultInventory = CreateDefaultInventory();
+
+            return new Warrior(name, defaultInventory);
+        }
+
+        /// <summary>
+        /// Factory method to create a Warrior instance with a custom inventory
+        /// </summary>
+        /// <param name="name">The character's name</param>
+        /// <param name="inventory">The custom inventory to use</param>
+        /// <returns>A new Warrior instance</returns>
         public static Warrior Create(string name, IInventory inventory)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -38,6 +64,24 @@ namespace RpgGame.Domain.Entities.Characters.Player
             }
 
             return new Warrior(name, inventory);
+        }
+
+        /// <summary>
+        /// Creates the default inventory for a new Warrior
+        /// </summary>
+        /// <returns>A new Inventory instance with Warrior defaults</returns>
+        private static IInventory CreateDefaultInventory()
+        {
+            // In a full implementation, we would add starting items here
+            // For example: a basic sword, some health potions, etc.
+            // This would require the implementation of these item classes
+            List<IItem> startingItems = new List<IItem>();
+
+            // Add warrior starting items when they are implemented
+            // startingItems.Add(new Sword("Rusty Sword", 5));
+            // startingItems.Add(new HealthPotion(20));
+
+            return RpgGame.Domain.Entities.Inventory.Inventory.Create(_defaultInventoryCapacity, _defaultStartingGold, startingItems);
         }
 
         /// <summary>

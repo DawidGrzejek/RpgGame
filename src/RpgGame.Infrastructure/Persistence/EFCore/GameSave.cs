@@ -1,0 +1,33 @@
+﻿using Newtonsoft.Json;
+using RpgGame.Domain.Entities.Characters.Base;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RpgGame.Infrastructure.Persistence.EFCore
+{
+    /// <summary>
+    /// Represents a game save that holds all necessary data to resume a game
+    /// </summary>
+    public class GameSave
+    {
+        public int Id { get; set; }
+        public string SaveName { get; set; }
+        public DateTime SaveDate { get; set; }
+        public string PlayerCharacterJson { get; set; }
+        public string CurrentLocationName { get; set; }
+        public int PlayTime { get; set; }
+
+        [NotMapped]
+        public Character PlayerCharacter
+        {
+            get => JsonConvert.DeserializeObject<Character>(PlayerCharacterJson,
+                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+            set => PlayerCharacterJson = JsonConvert.SerializeObject(value,
+                new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+        }
+    }
+}

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RpgGame.Application\RpgGame.Application.csproj" />
     <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
   </ItemGroup>
 

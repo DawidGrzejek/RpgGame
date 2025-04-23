@@ -1,12 +1,6 @@
 ﻿using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.Characters.Player;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RpgGame.Presentation.Views
 {
@@ -83,10 +77,10 @@ namespace RpgGame.Presentation.Views
                     newCharacter = Warrior.Create(name);
                     break;
                 case 1: // Mage
-                    //newCharacter = new Mage();
+                    newCharacter = Mage.Create(name);
                     break;
                 case 2: // Rogue
-                    //newCharacter = new Rouge();
+                    newCharacter = Rogue.Create(name);
                     break;
             }
 
@@ -101,6 +95,17 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine($"Health: {newCharacter.Health}/{newCharacter.MaxHealth}");
             Console.WriteLine($"Strength: {newCharacter.Strength}");
             Console.WriteLine($"Defense: {newCharacter.Defense}");
+
+            // Show class-specific stats if applicable
+            if (newCharacter is Mage mage)
+            {
+                Console.WriteLine($"Mana: {mage.Mana}/{mage.MaxMana}");
+            }
+            else if (newCharacter is Rogue rogue)
+            {
+                Console.WriteLine($"Critical Hit Chance: {rogue.CriticalChance:P0}");
+            }
+
             Console.WriteLine();
             Console.WriteLine("Press any key to begin your adventure...");
             Console.ReadKey();

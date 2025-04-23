@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using RpgGame.Domain.Entities.Characters.Base;
+using RpgGame.Domain.Entities.World;
+using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,7 @@ namespace RpgGame.Presentation.Views
         {
             "New Game",
             "Load Game",
+            "Delete Save",
             "Options",
             "Exit Game"
         };
@@ -24,7 +27,7 @@ namespace RpgGame.Presentation.Views
         /// <summary>
         /// Displays the main menu and processes user input
         /// </summary>
-        /// <returns>The selected menu option (0-3)</returns>
+        /// <returns>The selected menu option (0-4)</returns>
         public int Show()
         {
             // Display the game title and menu
@@ -45,7 +48,7 @@ namespace RpgGame.Presentation.Views
             do
             {
                 Console.WriteLine();
-                Console.Write("Select an option (1-4): ");
+                Console.Write($"Select an option (1-{_menuOptions.Length}): ");
                 string input = Console.ReadLine();
 
                 if (int.TryParse(input, out int option) && option >= 1 && option <= _menuOptions.Length)

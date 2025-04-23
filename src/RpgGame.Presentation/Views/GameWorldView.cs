@@ -1,11 +1,9 @@
-﻿using RpgGame.Domain.Entities.Characters.Base;
+﻿using RpgGame.Application.Services;
+using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.World;
 using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RpgGame.Presentation.Views
 {
@@ -15,13 +13,15 @@ namespace RpgGame.Presentation.Views
     public class GameWorldView
     {
         private readonly Character _player;
-        private readonly GameWorld _gameWorld;
-        private Location _currentLocation;
+        private readonly IGameWorld _gameWorld;
+        private readonly GameSaveService _gameSaveService;
+        private ILocation _currentLocation;
 
-        public GameWorldView(Character player, GameWorld gameWorld)
+        public GameWorldView(Character player, GameWorld gameWorld, GameSaveService gameSaveService)
         {
             _player = player ?? throw new ArgumentNullException(nameof(player));
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
+            _gameSaveService = gameSaveService ?? throw new ArgumentNullException(nameof(gameSaveService));
             _currentLocation = gameWorld.StartLocation;
         }
 
@@ -43,6 +43,18 @@ namespace RpgGame.Presentation.Views
 
                 Console.WriteLine($"Player: {_player.Name} (Level {_player.Level})");
                 Console.WriteLine($"Health: {_player.Health}/{_player.MaxHealth}");
+
+                // Display class-specific stats if available
+                if (_player is RpgGame.Domain.Entities.Characters.Player.Mage mage)
+                {
+                    Console.WriteLine($"Mana: {mage.Mana}/{mage.MaxMana}");
+                }
+                else if (_player is RpgGame.Domain.Entities.Characters.Player.Rogue rogue)
+                {
+                    Console.WriteLine($"Critical Hit Chance: {rogue.CriticalChance:P0}");
+                }
+
+                Console.WriteLine($"Play Time: {_gameSaveService.GetFormattedPlayTime()}");
                 Console.WriteLine();
 
                 // Display available actions
@@ -51,10 +63,11 @@ namespace RpgGame.Presentation.Views
                 Console.WriteLine("2. Rest");
                 Console.WriteLine("3. Travel to another location");
                 Console.WriteLine("4. View character stats");
-                Console.WriteLine("5. Return to main menu");
+                Console.WriteLine("5. Save game");
+                Console.WriteLine("6. Return to main menu");
 
                 // Get player action
-                int action = GetPlayerAction(1, 5);
+                int action = GetPlayerAction(1, 6);
 
                 // Process action
                 switch (action)
@@ -71,7 +84,10 @@ namespace RpgGame.Presentation.Views
                     case 4: // View stats
                         ViewCharacterStats();
                         break;
-                    case 5: // Return to main menu
+                    case 5: // Save game
+                        SaveGame();
+                        break;
+                    case 6: // Return to main menu
                         gameRunning = false;
                         break;
                 }
@@ -114,13 +130,20 @@ namespace RpgGame.Presentation.Views
             return action;
         }
 
-        private void SetCurrentLocation(Location newLocation)
+        private void SetCurrentLocation(ILocation newLocation)
         {
             if (newLocation == null)
                 throw new ArgumentNullException(nameof(newLocation));
 
             _currentLocation = newLocation;
             Console.WriteLine($"\nYou travel to {_currentLocation.Name}...");
+        }
+
+        // Method to save the current game
+        private void SaveGame()
+        {
+            var saveLoadView = new SaveLoadGameView(_gameSaveService);
+            saveLoadView.ShowSaveGameInterface(_player, _currentLocation);
         }
 
         // These methods would implement the different actions
@@ -144,7 +167,26 @@ namespace RpgGame.Presentation.Views
                     break;
                 case 2:
                     // This would call a combat view in a real implementation
-                    Console.WriteLine("You encounter an enemy! (Combat system not implemented in this example)");
+                    // Try to get a random enemy from the location
+                    Enemy enemy = _currentLocation.GetRandomEnemy();
+                    if (enemy != null)
+                    {
+                        Console.WriteLine($"You encounter a {enemy.Name}!");
+                        // Simulate a simple combat round
+                        _player.Attack(enemy);
+                        if (enemy.IsAlive)
+                        {
+                            enemy.Attack(_player);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"You defeated the {enemy.Name}!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("You encounter an enemy! (Combat system not fully implemented)");
+                    }
                     break;
             }
         }
@@ -161,7 +203,7 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine("\nWhere would you like to travel?");
 
             // Get connected locations
-            List<Location> connectedLocations = _gameWorld.GetConnectedLocations(_currentLocation);
+            List<ILocation> connectedLocations = _gameWorld.GetConnectedLocations(_currentLocation);
 
             if (connectedLocations.Count == 0)
             {
@@ -180,7 +222,6 @@ namespace RpgGame.Presentation.Views
 
             // Set new location
             SetCurrentLocation(connectedLocations[selection - 1]);
-            Console.WriteLine($"\nYou travel to {_currentLocation.Name}...");
         }
 
         private void ViewCharacterStats()
@@ -197,7 +238,17 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine($"Strength: {_player.Strength}");
             Console.WriteLine($"Defense: {_player.Defense}");
 
-            // Additional stats would be displayed based on character class
+            // Display class-specific stats if available
+            if (_player is RpgGame.Domain.Entities.Characters.Player.Mage mage)
+            {
+                Console.WriteLine($"Mana: {mage.Mana}/{mage.MaxMana}");
+            }
+            else if (_player is RpgGame.Domain.Entities.Characters.Player.Rogue rogue)
+            {
+                Console.WriteLine($"Critical Hit Chance: {rogue.CriticalChance:P0}");
+            }
+
+            Console.WriteLine($"\nPlay Time: {_gameSaveService.GetFormattedPlayTime()}");
 
             Console.WriteLine("\nPress any key to return...");
             Console.ReadKey();
