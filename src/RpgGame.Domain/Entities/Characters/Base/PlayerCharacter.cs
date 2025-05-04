@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RpgGame.Domain.Enums;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using RpgGame.Domain.Interfaces.Items;
@@ -127,6 +128,13 @@ namespace RpgGame.Domain.Entities.Characters.Base
         protected virtual void OnExperienceGained(int amount)
         {
             Console.WriteLine($"{Name} gained {amount} experience points. Total: {_experience}/{ExperienceToNextLevel}");
+
+            AddDomainEvent(new PlayerGainedExperience(
+                Name,
+                amount,
+                _experience,
+                ExperienceToNextLevel
+            ));
         }
 
         protected virtual void OnItemEquipped(IEquipment item)
@@ -145,6 +153,33 @@ namespace RpgGame.Domain.Entities.Characters.Base
         {
             base.OnDeath();
             Console.WriteLine("Game Over! Your character has been defeated.");
+        }
+
+        /// <inheritdoc/>
+        public override CharacterStateExported ExportState()
+        {
+            var equippedItems = new Dictionary<EquipmentSlot, string>();
+            foreach (var item in _equippedItems)
+            {
+                equippedItems[item.Key] = item.Value.Name;
+            }
+
+            var inventory = _inventory.Items.Select(i => i.Name).ToList();
+
+            return new PlayerStateExported(
+                Name,
+                Health,
+                MaxHealth,
+                Level,
+                Strength,
+                Defense,
+                IsAlive ? 1 : 0,
+                GetType().Name,
+                _experience,
+                ExperienceToNextLevel,
+                equippedItems,
+                inventory,
+                _inventory.Gold);
         }
     }
 }

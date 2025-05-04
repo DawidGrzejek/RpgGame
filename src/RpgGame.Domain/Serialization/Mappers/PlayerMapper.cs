@@ -1,6 +1,7 @@
 ﻿using RpgGame.Application.Serialization.DTOs;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.Characters.Player;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,9 @@ namespace RpgGame.Application.Serialization.Mappers
     {
         public static PlayerCharacterDto ToDto(PlayerCharacter character)
         {
-            var dto = new PlayerCharacterDto
+            var stateEvent = character.ExportState() as PlayerStateExported;
+
+            return new PlayerCharacterDto
             {
                 Name = character.Name,
                 Health = character.Health,
@@ -24,30 +27,13 @@ namespace RpgGame.Application.Serialization.Mappers
                 Strength = character.Strength,
                 Defense = character.Defense,
                 Experience = character.Experience,
-                Inventory = InventoryMapper.ToDto(character.Inventory)
+                CharacterType = character.GetType().Name,
+                Inventory = InventoryMapper.ToDto(character.Inventory),
+                EquippedItems = stateEvent.EquippedItems.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Name),
+                CriticalChance = (character as Rogue)?.CriticalChance,
+                Mana = (character as Mage)?.Mana,
+                MaxMana = (character as Mage)?.MaxMana
             };
-
-            // Set type-specific properties
-            if (character is Rogue rogue)
-            {
-                dto.CharacterType = "Rogue";
-                dto.CriticalChance = rogue.CriticalChance;
-            }
-            else if (character is Mage mage)
-            {
-                dto.CharacterType = "Mage";
-                dto.Mana = mage.Mana;
-                dto.MaxMana = mage.MaxMana;
-            }
-            else if (character is Warrior)
-            {
-                dto.CharacterType = "Warrior";
-            }
-
-            // Handle equipped items (this would need further implementation based on your design)
-            // Code for saving equipped items would go here
-
-            return dto;
         }
 
         public static PlayerCharacter FromDto(PlayerCharacterDto dto)

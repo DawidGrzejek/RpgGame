@@ -1,4 +1,5 @@
 ﻿using RpgGame.Domain.Entities.Inventory;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using RpgGame.Domain.Interfaces.Items;
@@ -170,6 +171,28 @@ namespace RpgGame.Domain.Entities.Characters.Player
             _mana = _maxMana; // Full mana restore on level up
 
             Console.WriteLine($"{Name}'s maximum mana increased by {manaIncrease} to {_maxMana}!");
+        }
+
+        public override CharacterStateExported ExportState()
+        {
+            var baseEvent = base.ExportState() as PlayerStateExported;
+
+            return new MageStateExported(
+                baseEvent.Name,
+                baseEvent.Health,
+                baseEvent.MaxHealth,
+                baseEvent.Level,
+                baseEvent.Strength,
+                baseEvent.Defense,
+                baseEvent.IsAlive,
+                baseEvent.CharacterType,
+                baseEvent.Experience,
+                baseEvent.ExperienceToNextLevel,
+                baseEvent.EquippedItems,
+                baseEvent.Inventory,
+                baseEvent.Gold,
+                Mana,
+                MaxMana);
         }
     }
 }

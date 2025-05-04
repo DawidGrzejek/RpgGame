@@ -1,4 +1,6 @@
 ﻿using System;
+using RpgGame.Domain.Base;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 
 namespace RpgGame.Domain.Entities.Characters.Base
@@ -6,8 +8,9 @@ namespace RpgGame.Domain.Entities.Characters.Base
     /// <summary>
     /// Base abstract class for all characters in the game
     /// </summary>
-    public abstract class Character : ICharacter
+    public abstract class Character : DomainEntity, ICharacter
     {
+
         // Protected fields - encapsulated implementation details
         protected string _name;
         protected int _health;
@@ -110,6 +113,7 @@ namespace RpgGame.Domain.Entities.Characters.Base
         /// </summary>
         public virtual void LevelUp()
         {
+            int oldLevel = _level;
             _level++;
 
             // Base stat improvements
@@ -123,6 +127,16 @@ namespace RpgGame.Domain.Entities.Characters.Base
             _defense += defenseIncrease;
 
             OnLevelUp(healthIncrease, strengthIncrease, defenseIncrease);
+
+            // Raise domain event
+            AddDomainEvent(new CharacterLeveledUp(
+                Name,
+                oldLevel,
+                _level,
+                healthIncrease,
+                strengthIncrease,
+                defenseIncrease
+            ));
         }
 
         // Protected methods (encapsulated implementation)
@@ -202,6 +216,29 @@ namespace RpgGame.Domain.Entities.Characters.Base
         protected virtual void OnDeath()
         {
             Console.WriteLine($"{Name} has been defeated!");
+
+            AddDomainEvent(new CharacterDied(
+                Name,
+                Level,
+                "Unknown" // Location would be passed from game context
+            ));
+        }
+
+        /// <summary>
+        /// Exports the current state of the character as a domain event
+        /// </summary>
+        /// <returns></returns>
+        public virtual CharacterStateExported ExportState()
+        {
+            return new CharacterStateExported(
+                Name,
+                Health,
+                MaxHealth,
+                Level,
+                Strength,
+                Defense,
+                IsAlive ? 1 : 0,
+                GetType().Name);
         }
     }
 }
