@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RpgGame.Application.Events.Handlers
+namespace RpgGame.Application.Events.Handlers.Character
 {
     /// <summary>
     /// Handles character state changed events for automatic saving

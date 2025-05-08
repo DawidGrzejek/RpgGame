@@ -1,10 +1,12 @@
 ﻿using RpgGame.Domain.Entities.Inventory;
+using RpgGame.Domain.Enums;
 using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using RpgGame.Domain.Interfaces.Items;
 using System;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RpgGame.Domain.Entities.Characters.Player
 {
@@ -40,6 +42,14 @@ namespace RpgGame.Domain.Entities.Characters.Player
         }
 
         /// <summary>
+        /// Private constructor for event sourcing
+        /// </summary>
+        protected Mage(bool isEventSourced) : base(isEventSourced)
+        {
+            // Will be populated by Apply methods
+        }
+
+        /// <summary>
         /// Factory method to create a Mage instance with a default inventory
         /// </summary>
         /// <param name="name">The character's name</param>
@@ -54,7 +64,18 @@ namespace RpgGame.Domain.Entities.Characters.Player
             // Create default mage inventory
             var defaultInventory = CreateDefaultInventory();
 
-            return new Mage(name, defaultInventory);
+            // Create the mage
+            var mage = new Mage(name, defaultInventory);
+
+            // Raise domain event
+            mage.RaiseDomainEvent((id, version) => new CharacterCreatedEvent(
+                id,
+                version,
+                name,
+                CharacterType.Mage
+            ));
+
+            return mage;
         }
 
         /// <summary>
@@ -76,6 +97,15 @@ namespace RpgGame.Domain.Entities.Characters.Player
             }
 
             return new Mage(name, inventory);
+        }
+
+        /// <summary>
+        /// internal factory method for event sourcing
+        /// </summary>
+        /// <returns></returns>
+        internal static Mage CreateForEventSourcing()
+        {
+            return new Mage(true);
         }
 
         /// <summary>

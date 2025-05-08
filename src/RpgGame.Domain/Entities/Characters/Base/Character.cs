@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Reflection;
 using RpgGame.Domain.Base;
+using RpgGame.Domain.Entities.Characters.Player;
+using RpgGame.Domain.Enums;
+using RpgGame.Domain.Events.Base;
 using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 
@@ -45,6 +49,20 @@ namespace RpgGame.Domain.Entities.Characters.Base
             _strength = strength;
             _defense = defense;
             _level = level;
+        }
+
+        /// <summary>
+        /// Protected constructor for event sourcing
+        /// </summary>
+        protected Character(bool forEventSourcing)
+        {
+            // Minimal initialization, will be overridden by Apply methods
+            _name = "";
+            _maxHealth = 1;
+            _health = 1;
+            _level = 1;
+            _strength = 1;
+            _defense = 1;
         }
 
         /// <summary>
@@ -129,7 +147,9 @@ namespace RpgGame.Domain.Entities.Characters.Base
             OnLevelUp(healthIncrease, strengthIncrease, defenseIncrease);
 
             // Raise domain event
-            AddDomainEvent(new CharacterLeveledUp(
+            RaiseDomainEvent((id, version) => new CharacterLeveledUp(
+                id,
+                version,
                 Name,
                 oldLevel,
                 _level,
@@ -217,10 +237,13 @@ namespace RpgGame.Domain.Entities.Characters.Base
         {
             Console.WriteLine($"{Name} has been defeated!");
 
-            AddDomainEvent(new CharacterDied(
+            // Raise domain event with location info
+            RaiseDomainEvent((id, version) => new CharacterDied(
+                id,
+                version,
                 Name,
                 Level,
-                "Unknown" // Location would be passed from game context
+                "Current Location" // Ideally get this from game context
             ));
         }
 
@@ -239,6 +262,86 @@ namespace RpgGame.Domain.Entities.Characters.Base
                 Defense,
                 IsAlive ? 1 : 0,
                 GetType().Name);
+        }
+
+        // Apply methods for event sourcing
+        protected virtual void Apply(CharacterLeveledUp @event)
+        {
+            _name = @event.CharacterName;
+            _level = @event.NewLevel;
+            // You may need to calculate health, strength, etc. based on level
+            _maxHealth = 100 + (@event.NewLevel * 10);
+            _health = _maxHealth;
+            _strength = 10 + (@event.NewLevel * 2);
+            _defense = 5 + (@event.NewLevel);
+        }
+
+        protected virtual void Apply(CharacterDied @event)
+        {
+            _name = @event.CharacterName;
+            _level = @event.Level;
+            _health = 0;
+        }
+
+        /// <summary>
+        /// Factory method to create the correct subtype from events
+        /// </summary>
+        public static Character FromEvents(Guid id, IEnumerable<IDomainEvent> events)
+        {
+            if (!events.Any())
+                return null;
+
+            // Find character creation event
+            var creationEvent = events.OfType<CharacterCreatedEvent>().FirstOrDefault();
+            if (creationEvent == null)
+                throw new InvalidOperationException("Character creation event not found");
+
+            // Create the right subtype
+            Character character = creationEvent.CharacterType switch
+            {
+                CharacterType.Warrior => Warrior.CreateForEventSourcing(),
+                CharacterType.Mage => Mage.CreateForEventSourcing(),
+                CharacterType.Rogue => Rogue.CreateForEventSourcing(),
+                _ => throw new InvalidOperationException($"Unknown character type: {creationEvent.CharacterType}")
+            };
+
+            // Set ID
+            typeof(DomainEntity).GetProperty("Id")?.SetValue(character, id);
+
+            // Apply events in order
+            foreach (var @event in events.OrderBy(e => e.OccurredAt))
+            {
+                ApplyEventToCharacter(character, @event);
+            }
+
+            return character;
+        }
+
+        private static string GetCharacterTypeFromEvents(IEnumerable<IDomainEvent> events)
+        {
+            // Find character type in events
+            foreach (var @event in events)
+            {
+                if (@event is CharacterCreatedEvent createdEvent)
+                {
+                    return createdEvent.CharacterType.ToString();
+                }
+            }
+
+            throw new InvalidOperationException("Could not determine character type from events");
+        }
+
+        private static void ApplyEventToCharacter(Character character, IDomainEvent @event)
+        {
+            var eventType = @event.GetType();
+            var method = character.GetType().GetMethod("Apply",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null, new[] { eventType }, null);
+
+            if (method != null)
+            {
+                method.Invoke(character, new object[] { @event });
+            }
         }
     }
 }

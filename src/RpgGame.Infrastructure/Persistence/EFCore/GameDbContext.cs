@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RpgGame.Domain.Events.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
     public class GameDbContext : DbContext
     {
         public DbSet<GameSave> GameSaves { get; set; }
+        public DbSet<StoredEvent> Events { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -73,6 +75,24 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
             modelBuilder.Entity<GameSave>()
                 .Property(g => g.PlayerCharacterJson)
                 .HasColumnName("PlayerCharacter");
+
+
+            modelBuilder.Entity<StoredEvent>(entity =>
+            {
+                entity.ToTable("StoredEvents");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AggregateId).IsRequired();
+                entity.Property(e => e.AggregateType).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.EventType).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.EventData).IsRequired();
+                entity.Property(e => e.Timestamp).IsRequired();
+                entity.Property(e => e.Version).IsRequired();
+
+                // Create indexes for efficient querying
+                entity.HasIndex(e => e.AggregateId);
+                entity.HasIndex(e => e.Timestamp);
+                entity.HasIndex(e => new { e.AggregateId, e.Version }).IsUnique();
+            });
         }
     }
 }

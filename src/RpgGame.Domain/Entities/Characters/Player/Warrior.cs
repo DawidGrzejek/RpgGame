@@ -1,4 +1,6 @@
 ﻿using RpgGame.Domain.Entities.Inventory;
+using RpgGame.Domain.Enums;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using RpgGame.Domain.Interfaces.Items;
@@ -28,6 +30,14 @@ namespace RpgGame.Domain.Entities.Characters.Player
         }
 
         /// <summary>
+        /// Private constructor for event sourcing
+        /// </summary>
+        private Warrior(bool forEventSourcing) : base(forEventSourcing)
+        {
+            // Will be populated by Apply methods
+        }
+
+        /// <summary>
         /// Factory method to create a Warrior instance with a default inventory
         /// </summary>
         /// <param name="name">The character's name</param>
@@ -42,7 +52,18 @@ namespace RpgGame.Domain.Entities.Characters.Player
             // Create default warrior inventory
             var defaultInventory = CreateDefaultInventory();
 
-            return new Warrior(name, defaultInventory);
+            // Create the warrior
+            var warrior = new Warrior(name, defaultInventory);
+
+            // Raise domain event
+            warrior.RaiseDomainEvent((id, version) => new CharacterCreatedEvent(
+                id,
+                version,
+                name,
+                CharacterType.Warrior
+            ));
+
+            return warrior;
         }
 
         /// <summary>
@@ -64,6 +85,15 @@ namespace RpgGame.Domain.Entities.Characters.Player
             }
 
             return new Warrior(name, inventory);
+        }
+
+        /// <summary>
+        /// internal factory method for event sourcing
+        /// </summary>
+        /// <returns></returns>
+        internal static Warrior CreateForEventSourcing()
+        {
+            return new Warrior(true);
         }
 
         /// <summary>

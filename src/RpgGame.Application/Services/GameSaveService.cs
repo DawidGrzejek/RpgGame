@@ -1,6 +1,8 @@
 ﻿using RpgGame.Domain.Entities.Characters.Base;
+using RpgGame.Domain.Events.Game;
 using RpgGame.Domain.Interfaces.World;
 using RpgGame.Infrastructure.Persistence.EFCore;
+using RpgGame.Infrastructure.Persistence.EventStore;
 using System;
 using System.Collections.Generic;
 
@@ -15,9 +17,11 @@ namespace RpgGame.Application.Services
         private int _currentPlayTime; // Track play time in seconds
         private DateTime _sessionStartTime;
         private bool _disposed = false;
+        private readonly IEventStoreRepository _eventStore;
 
-        public GameSaveService()
+        public GameSaveService(IEventStoreRepository eventStore)
         {
+            _eventStore = eventStore;
             _saveRepository = new EfGameSaveRepository();
             _currentPlayTime = 0;
             _sessionStartTime = DateTime.Now;
@@ -53,6 +57,19 @@ namespace RpgGame.Application.Services
         {
             // Update play time before saving
             UpdatePlayTime();
+
+            // Also store a game save event
+            var saveEvent = new GameSavedEvent(
+                Guid.NewGuid(), // Or use a consistent ID for the game
+                1, // Version
+                saveName,
+                player.Name,
+                player.Level,
+                currentLocation.Name,
+                DateTime.UtcNow
+            );
+
+            _eventStore.SaveEventAsync(saveEvent).GetAwaiter().GetResult();
 
             return _saveRepository.SaveGame(saveName, player, currentLocation, _currentPlayTime);
         }

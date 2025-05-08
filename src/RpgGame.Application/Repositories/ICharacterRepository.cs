@@ -1,12 +1,16 @@
-﻿using System;
+﻿using RpgGame.Domain.Entities.Characters.Base;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RpgGame.Application.Repositories
 {
-    internal interface ICharacterRepository
+    public interface ICharacterRepository
     {
+        Task<Character> GetByIdAsync(Guid id);
+        Task<IReadOnlyList<Character>> GetAllAsync();
+        Task<Guid> AddAsync(Character character);
+        Task UpdateAsync(Character character);
+        Task DeleteAsync(Guid id);
     }
 }

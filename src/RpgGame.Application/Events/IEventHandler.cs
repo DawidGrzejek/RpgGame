@@ -12,6 +12,6 @@ namespace RpgGame.Application.Events
     /// </summary>
     public interface IEventHandler<TEvent> where TEvent : IDomainEvent
     {
-        Task HandleAsync(TEvent domainEvent);
+        Task HandleAsync(TEvent domainEvent, CancellationToken cancellationToken = default);
     }
 }

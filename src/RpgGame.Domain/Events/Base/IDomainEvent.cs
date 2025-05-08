@@ -14,5 +14,8 @@ namespace RpgGame.Domain.Events.Base
         Guid EventId { get; }
         DateTime OccurredAt { get; }
         string EventType { get; }
+
+        Guid AggregateId { get; }
+        int Version { get; }
     }
 }

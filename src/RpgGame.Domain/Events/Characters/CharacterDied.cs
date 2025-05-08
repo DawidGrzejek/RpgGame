@@ -17,7 +17,8 @@ namespace RpgGame.Domain.Events.Characters
         public int Level { get; }
         public string Location { get; }
 
-        public CharacterDied(string characterName, int level, string location)
+        public CharacterDied(Guid aggregateId, int version, string characterName, int level, string location) 
+            : base(aggregateId, version)
         {
             CharacterName = characterName;
             Level = level;

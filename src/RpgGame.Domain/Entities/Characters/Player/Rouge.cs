@@ -1,4 +1,6 @@
 ﻿using RpgGame.Domain.Entities.Inventory;
+using RpgGame.Domain.Enums;
+using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
 using RpgGame.Domain.Interfaces.Items;
@@ -36,6 +38,14 @@ namespace RpgGame.Domain.Entities.Characters.Player
         }
 
         /// <summary>
+        /// Private constructor for event sourcing
+        /// </summary>
+        protected Rogue(bool isEventSourced) : base(isEventSourced)
+        {
+            // Will be populated by Apply methods
+        }
+
+        /// <summary>
         /// Factory method to create a Rogue instance with a default inventory
         /// </summary>
         /// <param name="name">The character's name</param>
@@ -50,7 +60,18 @@ namespace RpgGame.Domain.Entities.Characters.Player
             // Create default rogue inventory
             var defaultInventory = CreateDefaultInventory();
 
-            return new Rogue(name, defaultInventory);
+            // Create the rogue
+            var rogue = new Rogue(name, defaultInventory);
+
+            // Raise domain event
+            rogue.RaiseDomainEvent((id, version) => new CharacterCreatedEvent(
+                id,
+                version,
+                name,
+                CharacterType.Rogue
+            ));
+
+            return rogue;
         }
 
         /// <summary>
@@ -72,6 +93,15 @@ namespace RpgGame.Domain.Entities.Characters.Player
             }
 
             return new Rogue(name, inventory);
+        }
+
+        /// <summary>
+        /// internal factory method for event sourcing
+        /// </summary>
+        /// <returns></returns>
+        internal static Rogue CreateForEventSourcing()
+        {
+            return new Rogue(true);
         }
 
         /// <summary>

@@ -14,12 +14,16 @@ namespace RpgGame.Domain.Events.Base
         public Guid EventId { get; }
         public DateTime OccurredAt { get; }
         public string EventType { get; }
+        public Guid AggregateId { get; }
+        public int Version{ get; }
 
-        protected DomainEventBase()
+        protected DomainEventBase(Guid aggregateId, int version = 1)
         {
             EventId = Guid.NewGuid();
             OccurredAt = DateTime.UtcNow;
             EventType = GetType().Name;
+            AggregateId = aggregateId;
+            Version = version;
         }
     }
 }

@@ -27,18 +27,25 @@ namespace RpgGame.Domain.Entities.Characters.Base
         /// <summary>
         /// Constructor for player characters
         /// </summary>
-        protected PlayerCharacter(
-            string name,
-            int health,
-            int strength,
-            int defense,
-            IInventory inventory)
+        protected PlayerCharacter(string name, int health, int strength, int defense, IInventory inventory)
             : base(name, health, strength, defense)
         {
             _experience = 0;
             _baseExperienceToNextLevel = 100;
             _inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             _equippedItems = new Dictionary<EquipmentSlot, IEquipment>();
+        }
+
+        /// <summary>
+        /// Protected constructor for event sourcing
+        /// </summary>
+        /// <param name="isEventSourced"></param>
+        protected PlayerCharacter(bool isEventSourced) : base(isEventSourced)
+        {
+            _experience = 0;
+            _baseExperienceToNextLevel = 100;
+            _equippedItems = new Dictionary<EquipmentSlot, IEquipment>();
+            // Inventory will be set through events
         }
 
         /// <summary>

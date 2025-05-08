@@ -19,7 +19,15 @@ namespace RpgGame.Domain.Events.Characters
         public int StrengthIncrease { get; }
         public int DefenseIncrease { get; }
 
-        public CharacterLeveledUp(string characterName, int oldLevel, int newLevel, int healthIncrease, int strengthIncrease, int defenseIncrease)
+        public CharacterLeveledUp(
+            Guid aggregateId,
+            int version,
+            string characterName, 
+            int oldLevel, 
+            int newLevel, 
+            int healthIncrease, 
+            int strengthIncrease, 
+            int defenseIncrease) : base(aggregateId, version)
         {
             CharacterName = characterName;
             OldLevel = oldLevel;
