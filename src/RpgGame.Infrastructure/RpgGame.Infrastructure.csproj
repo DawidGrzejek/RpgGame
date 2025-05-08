@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
+	<ProjectReference Include="..\RpgGame.Application\RpgGame.Application.csproj" />
   </ItemGroup>
 
 </Project>

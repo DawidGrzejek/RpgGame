@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using RpgGame.Application.Events;
+using RpgGame.Application.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.Characters.Player;
 using RpgGame.Domain.Enums;
@@ -29,13 +30,16 @@ namespace RpgGame.Application.Commands.Characters
                 .IsInEnum().WithMessage("Invalid character type");
         }
     }
-
     public class CreateCharacterCommandHandler : IRequestHandler<CreateCharacterCommand, CommandResult<Character>>
     {
+        private readonly ICharacterRepository _characterRepository;
         private readonly IEventDispatcher _eventDispatcher;
 
-        public CreateCharacterCommandHandler(IEventDispatcher eventDispatcher)
+        public CreateCharacterCommandHandler(
+            ICharacterRepository characterRepository,
+            IEventDispatcher eventDispatcher)
         {
+            _characterRepository = characterRepository;
             _eventDispatcher = eventDispatcher;
         }
 
@@ -51,7 +55,10 @@ namespace RpgGame.Application.Commands.Characters
                     _ => throw new ArgumentException("Unsupported character type")
                 };
 
-                // Dispatch the character creation event
+                // Store the character
+                await _characterRepository.AddAsync(character);
+
+                // Dispatch events
                 await _eventDispatcher.DispatchAsync(character.DomainEvents, cancellationToken);
                 character.ClearDomainEvents();
 

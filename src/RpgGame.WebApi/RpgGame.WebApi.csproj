@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RpgGame.Application\RpgGame.Application.csproj" />
+    <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
+    <ProjectReference Include="..\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
+    <ProjectReference Include="..\src\RpgGame.Application\RpgGame.Application.csproj" />
+    <ProjectReference Include="..\src\RpgGame.Domain\RpgGame.Domain.csproj" />
+    <ProjectReference Include="..\src\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\Combat\" />
+    <Folder Include="DTOs\Inventory\" />
+    <Folder Include="DTOs\Quests\" />
+  </ItemGroup>
+
+</Project>

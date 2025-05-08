@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RpgGame.Application.Events;
+using RpgGame.Application.Repositories;
 using RpgGame.Infrastructure.EventStore;
 using RpgGame.Infrastructure.Persistence.EFCore;
-using RpgGame.Infrastructure.Persistence.EventStore;
+using RpgGame.Infrastructure.Persistence.Repositories;
 
 namespace RpgGame.Infrastructure
 {
@@ -22,6 +24,8 @@ namespace RpgGame.Infrastructure
 
             // Register event store repository
             services.AddScoped<IEventStoreRepository, EventStoreRepository>();
+
+            services.AddScoped<ICharacterRepository, CharacterRepository>();
 
             return services;
         }

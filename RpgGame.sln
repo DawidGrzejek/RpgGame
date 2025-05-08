@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgGame.Infrastructure", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgGame.Presentation", "src\RpgGame.Presentation\RpgGame.Presentation.csproj", "{691E1FF3-A988-4B35-A31B-7126279CAEA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgGame.WebApi", "src\RpgGame.WebApi\RpgGame.WebApi.csproj", "{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{691E1FF3-A988-4B35-A31B-7126279CAEA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{691E1FF3-A988-4B35-A31B-7126279CAEA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{691E1FF3-A988-4B35-A31B-7126279CAEA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +58,7 @@ Global
 		{7A3B5106-5D33-4B96-A3EF-8474B9697893} = {EF65BC7C-2E44-44B5-9153-F02D99C25AC3}
 		{E41AB344-5DD7-47DA-8958-0DC64D2401E7} = {EF65BC7C-2E44-44B5-9153-F02D99C25AC3}
 		{691E1FF3-A988-4B35-A31B-7126279CAEA7} = {EF65BC7C-2E44-44B5-9153-F02D99C25AC3}
+		{D02704ED-D4E8-4FB2-8FA2-F6914D1F008F} = {EF65BC7C-2E44-44B5-9153-F02D99C25AC3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3600DEBB-E273-4BB5-B4FA-0CC2D963A987}

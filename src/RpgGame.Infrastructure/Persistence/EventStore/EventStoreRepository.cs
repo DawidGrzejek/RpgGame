@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using RpgGame.Application.Events;
 using RpgGame.Domain.Events.Base;
 using RpgGame.Infrastructure.Persistence.EFCore;
-using RpgGame.Infrastructure.Persistence.EventStore;
 using System;
 using System.Collections.Generic;
 using System.Linq;

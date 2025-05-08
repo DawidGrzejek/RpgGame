@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Events.Base;
-using RpgGame.Infrastructure.Persistence.EventStore;
 
 public class EventDispatcher : IEventDispatcher
 {

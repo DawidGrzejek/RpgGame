@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RpgGame.Domain.Events.Base;
 
-namespace RpgGame.Infrastructure.Persistence.EventStore
+namespace RpgGame.Application.Events
 {
     public interface IEventStoreRepository
     {

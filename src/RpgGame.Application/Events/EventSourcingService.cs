@@ -1,7 +1,5 @@
 ﻿using RpgGame.Domain.Base;
 using RpgGame.Domain.Events.Base;
-using RpgGame.Infrastructure.EventStore;
-using RpgGame.Infrastructure.Persistence.EventStore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

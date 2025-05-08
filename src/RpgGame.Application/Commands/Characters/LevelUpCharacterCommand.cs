@@ -2,7 +2,6 @@
 using MediatR;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Infrastructure.Persistence.EventStore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

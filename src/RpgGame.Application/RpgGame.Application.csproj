@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
+    <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
   </ItemGroup>
 
 </Project>
