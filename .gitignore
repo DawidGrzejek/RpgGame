@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/src/RpgGame.AngularUI/rpg-game-ui/.gitignore
+/src/RpgGame.AngularUI/rpg-game-ui/.vscode
