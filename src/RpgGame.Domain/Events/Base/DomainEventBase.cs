@@ -15,7 +15,7 @@ namespace RpgGame.Domain.Events.Base
         public DateTime OccurredAt { get; }
         public string EventType { get; }
         public Guid AggregateId { get; }
-        public int Version{ get; }
+        public int Version { get; }
 
         protected DomainEventBase(Guid aggregateId, int version = 1)
         {

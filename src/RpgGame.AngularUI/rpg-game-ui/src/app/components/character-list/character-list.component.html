@@ -1,0 +1,26 @@
+<div class="character-list">
+  <h2>Characters</h2>
+
+  <div *ngIf="loading">Loading characters...</div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error">
+    <div *ngIf="characters.length === 0">
+      No characters found. Create your first character!
+    </div>
+
+    <div *ngIf="characters.length > 0" class="character-grid">
+      <div *ngFor="let character of characters" class="character-card">
+        <h3>{{ character.name }}</h3>
+        <p>Level {{ character.level }} {{ character.characterType }}</p>
+        <div class="health-bar">
+          <div class="health-fill" [style.width.%]="character.healthPercentage"></div>
+        </div>
+        <a [routerLink]="['/characters', character.id]" class="view-button">View Details</a>
+      </div>
+    </div>
+
+    <a routerLink="/characters/new" class="create-button">Create New Character</a>
+  </div>
+</div>
