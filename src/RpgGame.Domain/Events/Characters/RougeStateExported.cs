@@ -12,6 +12,8 @@ namespace RpgGame.Domain.Events.Characters
         public double CriticalChance { get; }
 
         public RougeStateExported(
+            Guid aggregateId,
+            int version,
             string name,
             int health,
             int maxHealth,
@@ -26,7 +28,7 @@ namespace RpgGame.Domain.Events.Characters
             List<string> inventory,
             int gold,
             double criticalChance)
-            : base(name, health, maxHealth, level, strength, defense, isAlive, characterType, experience, experienceToNextLevel, equippedItems, inventory, gold)
+            : base(aggregateId, version, name, health, maxHealth, level, strength, defense, isAlive, characterType, experience, experienceToNextLevel, equippedItems, inventory, gold)
         {
             CriticalChance = criticalChance;
         }

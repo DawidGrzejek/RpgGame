@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using RpgGame.Application.Events;
+using RpgGame.Application.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.Items;
 using System;
@@ -44,15 +45,21 @@ namespace RpgGame.Application.Commands.Inventory
         {
             try
             {
-                // Get character from event store
-                var character = await _eventSourcingService.GetByIdAsync<PlayerCharacter>(request.CharacterId);
+                // Get character - this will return the concrete character type from the event stream
+                var character = await _eventSourcingService.GetByIdAsync<Character>(request.CharacterId);
 
                 if (character == null)
                 {
                     return CommandResult.Fail($"Character with ID {request.CharacterId} not found");
                 }
 
-                // Get item
+                // Check if it's a PlayerCharacter since only players can equip items
+                if (character is not PlayerCharacter playerCharacter)
+                {
+                    return CommandResult.Fail($"Character with ID {request.CharacterId} is not a player character");
+                }
+
+                // Get item from repository
                 var item = await _itemRepository.GetByIdAsync(request.ItemId);
 
                 if (item == null)
@@ -66,13 +73,13 @@ namespace RpgGame.Application.Commands.Inventory
                     return CommandResult.Fail($"Item '{item.Name}' is not equipable");
                 }
 
-                // Equip the item
-                character.EquipItem(equipment);
+                // Equip the item - this will generate an event in the character's DomainEvents collection
+                playerCharacter.EquipItem(equipment);
 
                 // Save the updated character with its new event
-                await _eventSourcingService.SaveAsync(character);
+                await _eventSourcingService.SaveAsync(playerCharacter);
 
-                return CommandResult.Ok($"Character {character.Name} equipped {item.Name}");
+                return CommandResult.Ok($"Character {playerCharacter.Name} equipped {item.Name}");
             }
             catch (Exception ex)
             {

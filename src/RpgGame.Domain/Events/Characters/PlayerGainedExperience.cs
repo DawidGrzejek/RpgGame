@@ -17,8 +17,8 @@ namespace RpgGame.Domain.Events.Characters
         public int TotalExperience { get; }
         public int ExperienceToNextLevel { get; }
 
-        public PlayerGainedExperience(string playerName, int experienceGained,
-            int totalExperience, int experienceToNextLevel)
+        public PlayerGainedExperience(Guid aggregateId, int version, string playerName, int experienceGained, int totalExperience, int experienceToNextLevel)
+            : base(aggregateId, version)
         {
             PlayerName = playerName;
             ExperienceGained = experienceGained;

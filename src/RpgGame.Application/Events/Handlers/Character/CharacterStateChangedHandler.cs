@@ -23,7 +23,7 @@ namespace RpgGame.Application.Events.Handlers.Character
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
         }
 
-        public async Task HandleAsync(CharacterLeveledUp domainEvent)
+        public async Task HandleAsync(CharacterLeveledUp domainEvent, CancellationToken cancellationToken = default)
         {
             try
             {

@@ -21,7 +21,8 @@ namespace RpgGame.Domain.Events.Characters
         public int IsAlive { get; }
         public string CharacterType { get; }
 
-        public CharacterStateExported(string name, int health, int maxHealth, int level, int strength, int defense, int isAlive, string characterType)
+        public CharacterStateExported(Guid aggregateId, int version, string name, int health, int maxHealth, int level, int strength, int defense, int isAlive, string characterType)
+            : base(aggregateId, version)
         {
             Name = name;
             Health = health;

@@ -137,10 +137,12 @@ namespace RpgGame.Domain.Entities.Characters.Base
             Console.WriteLine($"{Name} gained {amount} experience points. Total: {_experience}/{ExperienceToNextLevel}");
 
             AddDomainEvent(new PlayerGainedExperience(
-                Name,
-                amount,
-                _experience,
-                ExperienceToNextLevel
+                Guid.NewGuid(), // EventId
+                amount,         // ExperienceGained
+                Name,           // PlayerName
+                _experience,    // TotalExperience
+                ExperienceToNextLevel, // ExperienceToNextLevel
+                1               // Version (assuming default version is 1)
             ));
         }
 
@@ -174,6 +176,8 @@ namespace RpgGame.Domain.Entities.Characters.Base
             var inventory = _inventory.Items.Select(i => i.Name).ToList();
 
             return new PlayerStateExported(
+                this.Id,  // The character's ID as the aggregateId
+                this.Version + 1,  // Increment version
                 Name,
                 Health,
                 MaxHealth,

@@ -16,7 +16,8 @@ namespace RpgGame.Domain.Events.Characters
         public string OldLocation { get; }
         public string NewLocation { get; }
 
-        public PlayerLocationChanged(string playerName, string oldLocation, string newLocation)
+        public PlayerLocationChanged(Guid aggregateId, int version, string playerName, string oldLocation, string newLocation)
+            : base(aggregateId, version)
         {
             PlayerName = playerName;
             OldLocation = oldLocation;

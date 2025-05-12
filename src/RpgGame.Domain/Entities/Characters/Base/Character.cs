@@ -254,14 +254,17 @@ namespace RpgGame.Domain.Entities.Characters.Base
         public virtual CharacterStateExported ExportState()
         {
             return new CharacterStateExported(
+                Id, // Assuming Id is inherited from DomainEntity
+                Version, // Assuming Version is inherited from DomainEntity
                 Name,
                 Health,
                 MaxHealth,
                 Level,
                 Strength,
                 Defense,
-                IsAlive ? 1 : 0,
-                GetType().Name);
+                IsAlive ? 1 : 0, // Pass the 'isAlive' parameter as required
+                GetType().Name
+            );
         }
 
         // Apply methods for event sourcing

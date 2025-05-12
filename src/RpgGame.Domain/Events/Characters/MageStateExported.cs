@@ -13,6 +13,8 @@ namespace RpgGame.Domain.Events.Characters
         public int MaxMana { get; }
 
         public MageStateExported(
+            Guid aggregateId,
+            int version,
             string name,
             int health,
             int maxHealth,
@@ -28,7 +30,7 @@ namespace RpgGame.Domain.Events.Characters
             int gold,
             int mana,
             int maxMana)
-            : base(name, health, maxHealth, level, strength, defense, isAlive, characterType, experience, experienceToNextLevel, equippedItems, inventory, gold)
+            : base(aggregateId, version, name, health, maxHealth, level, strength, defense, isAlive, characterType, experience, experienceToNextLevel, equippedItems, inventory, gold)
         {
             Mana = mana;
             MaxMana = maxMana;

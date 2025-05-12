@@ -18,6 +18,11 @@ namespace RpgGame.Application.Serialization.Mappers
         {
             var stateEvent = character.ExportState() as PlayerStateExported;
 
+            if (stateEvent == null)
+            {
+                throw new InvalidOperationException("Failed to export player state.");
+            }
+
             return new PlayerCharacterDto
             {
                 Name = character.Name,
@@ -29,7 +34,10 @@ namespace RpgGame.Application.Serialization.Mappers
                 Experience = character.Experience,
                 CharacterType = character.GetType().Name,
                 Inventory = InventoryMapper.ToDto(character.Inventory),
-                EquippedItems = stateEvent.EquippedItems.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Name),
+                EquippedItems = stateEvent.EquippedItems.ToDictionary(
+                    kvp => kvp.Key.ToString(),
+                    kvp => (object)kvp.Value
+                ),
                 CriticalChance = (character as Rogue)?.CriticalChance,
                 Mana = (character as Mage)?.Mana,
                 MaxMana = (character as Mage)?.MaxMana

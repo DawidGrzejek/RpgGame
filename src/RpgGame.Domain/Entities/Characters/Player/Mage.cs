@@ -208,6 +208,8 @@ namespace RpgGame.Domain.Entities.Characters.Player
             var baseEvent = base.ExportState() as PlayerStateExported;
 
             return new MageStateExported(
+                base.Id,
+                base.Version,
                 baseEvent.Name,
                 baseEvent.Health,
                 baseEvent.MaxHealth,

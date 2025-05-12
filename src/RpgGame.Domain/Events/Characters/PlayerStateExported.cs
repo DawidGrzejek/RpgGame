@@ -19,6 +19,8 @@ namespace RpgGame.Domain.Events.Characters
         public int Gold { get; }
 
         public PlayerStateExported(
+            Guid aggregateId,
+            int version,
             string name,
             int health,
             int maxHealth,
@@ -32,7 +34,7 @@ namespace RpgGame.Domain.Events.Characters
             Dictionary<EquipmentSlot, string> equippedItems,
             List<string> inventory,
             int gold)
-            : base(name, health, maxHealth, level, strength, defense, isAlive, characterType)
+            : base(aggregateId, version, name, health, maxHealth, level, strength, defense, isAlive, characterType)
         {
             Experience = experience;
             ExperienceToNextLevel = experienceToNextLevel;

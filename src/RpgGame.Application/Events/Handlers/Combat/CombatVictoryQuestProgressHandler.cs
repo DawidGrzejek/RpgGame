@@ -26,9 +26,9 @@ namespace RpgGame.Application.Events.Handlers.Combat
             try
             {
                 // Update any active quests that require defeating this enemy type
-                await _questService.UpdateCombatObjectivesAsync(
-                    domainEvent.PlayerName,
-                    domainEvent.EnemyName);
+                //await _questService.UpdateCombatObjectivesAsync(
+                //    domainEvent.PlayerName,
+                //    domainEvent.EnemyName);
 
                 _logger.LogInformation(
                     "Updated quest progress for player {PlayerName} after defeating {EnemyName}",

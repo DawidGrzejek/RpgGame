@@ -2,7 +2,6 @@
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Events.Game;
 using RpgGame.Domain.Interfaces.World;
-using RpgGame.Infrastructure.Persistence.EFCore;
 using System;
 using System.Collections.Generic;
 

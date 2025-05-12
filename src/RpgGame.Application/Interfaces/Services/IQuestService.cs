@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RpgGame.Application.Interfaces.Services
 {
-    internal interface IQuestService
+    public interface IQuestService
     {
     }
 }

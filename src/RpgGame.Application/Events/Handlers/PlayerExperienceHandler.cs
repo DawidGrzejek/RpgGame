@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace RpgGame.Application.Events.Handlers
-{/// <summary>
- /// Handles player experience events for analytics
- /// </summary>
+{
+    /// <summary>
+    /// Handles player experience events for analytics
+    /// </summary>
     public class PlayerExperienceHandler : IEventHandler<PlayerGainedExperience>
     {
-        public async Task HandleAsync(PlayerGainedExperience domainEvent)
+        public async Task HandleAsync(PlayerGainedExperience domainEvent, CancellationToken cancellationToken = default)
         {
             // Log experience gained for analytics
             Console.WriteLine($"Player {domainEvent.PlayerName} gained {domainEvent.ExperienceGained} experience");
