@@ -14,6 +14,6 @@ namespace RpgGame.Application.Events
     {
         Task PublishAsync<TEvent>(TEvent domainEvent) where TEvent : IDomainEvent;
         void RegisterHandler<TEvent>(IEventHandler<TEvent> handler) where TEvent : IDomainEvent;
-        void RemoveHanlder<TEvent>(IEventHandler<TEvent> handler) where TEvent : IDomainEvent;
+        void RemoveHandler<TEvent>(IEventHandler<TEvent> handler) where TEvent : IDomainEvent;
     }
 }

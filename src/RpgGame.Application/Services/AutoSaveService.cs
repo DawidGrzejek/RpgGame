@@ -1,4 +1,4 @@
-﻿using RpgGame.Application.Services;
+﻿using RpgGame.Application.Interfaces.Services;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.World;
 using System;
@@ -9,7 +9,7 @@ namespace RpgGame.Application.Services
 {
     public class AutoSaveService : IDisposable
     {
-        private readonly GameSaveService _gameSaveService;
+        private readonly IGameSaveService _gameSaveService;
         private Timer _autoSaveTimer;
         private const int DEFAULT_AUTOSAVE_INTERVAL = 5; // minutes
         private readonly string _autoSaveName = "AutoSave";
@@ -21,7 +21,7 @@ namespace RpgGame.Application.Services
         public bool IsEnabled { get; private set; }
         public int IntervalMinutes { get; private set; }
 
-        public AutoSaveService(GameSaveService gameSaveService)
+        public AutoSaveService(IGameSaveService gameSaveService)
         {
             _gameSaveService = gameSaveService ?? throw new ArgumentNullException(nameof(gameSaveService));
             IntervalMinutes = DEFAULT_AUTOSAVE_INTERVAL;
@@ -99,7 +99,7 @@ namespace RpgGame.Application.Services
             Console.WriteLine("AutoSave disabled.");
         }
 
-        private void PerformAutoSave(object state)
+        private async void PerformAutoSave(object state)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace RpgGame.Application.Services
                         return;
 
                     // Perform the save
-                    bool success = _gameSaveService.SaveGame(_autoSaveName, _player, _currentLocation);
+                    bool success = await _gameSaveService.SaveGameAsync(_autoSaveName, _player, _currentLocation);
 
                     if (success)
                     {

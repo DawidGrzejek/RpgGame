@@ -9,8 +9,8 @@ namespace RpgGame.Application.Events
 {
     public class InMemoryEventPublisher : IEventPublisher
     {
-        public readonly Dictionary<Type, List<IEventHandlerWrapper>> _handlers = new();
-        public readonly object _lock = new();
+        private readonly Dictionary<Type, List<IEventHandlerWrapper>> _handlers = new(); // Fixed accessibility and simplified initialization
+        private readonly object _lock = new();
 
         /// <summary>
         /// Publishes a domain event to all registered handlers.
@@ -41,6 +41,9 @@ namespace RpgGame.Application.Events
 
             // Console logging for debugging purposes
             Console.WriteLine($"Event Published: {domainEvent.EventType} at {domainEvent.OccurredAt}");
+
+            // Return a completed task to ensure all code paths return a value
+            return Task.CompletedTask;
         }
 
         /// <summary>

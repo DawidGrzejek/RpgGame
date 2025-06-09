@@ -2,7 +2,6 @@
 using MediatR;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Events.Base;
-using RpgGame.Infrastructure.EventStore;
 using System;
 using System.Collections.Generic;
 using System.Threading;

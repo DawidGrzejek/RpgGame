@@ -1,9 +1,10 @@
-﻿using RpgGame.Application.Services;
+﻿using RpgGame.Application.Interfaces.Services;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RpgGame.Presentation.Views
 {
@@ -12,9 +13,9 @@ namespace RpgGame.Presentation.Views
     /// </summary>
     public class SaveLoadGameView
     {
-        private readonly GameSaveService _gameSaveService;
+        private readonly IGameSaveService _gameSaveService;
 
-        public SaveLoadGameView(GameSaveService gameSaveService)
+        public SaveLoadGameView(IGameSaveService gameSaveService)
         {
             _gameSaveService = gameSaveService ?? throw new ArgumentNullException(nameof(gameSaveService));
         }
@@ -25,7 +26,7 @@ namespace RpgGame.Presentation.Views
         /// <param name="player">The player character to save</param>
         /// <param name="currentLocation">The current location to save</param>
         /// <returns>True if the game was saved successfully</returns>
-        public bool ShowSaveGameInterface(Character player, ILocation currentLocation)
+        public async Task<bool> ShowSaveGameInterfaceAsync(Character player, ILocation currentLocation)
         {
             Console.Clear();
             Console.WriteLine("===================================");
@@ -38,7 +39,7 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine();
 
             // List existing saves
-            List<(string SaveName, DateTime SaveDate)> existingSaves = _gameSaveService.GetAvailableSaves();
+            List<(string SaveName, DateTime SaveDate)> existingSaves = await _gameSaveService.GetAvailableSavesAsync();
             if (existingSaves.Count > 0)
             {
                 Console.WriteLine("Existing saves:");
@@ -79,7 +80,7 @@ namespace RpgGame.Presentation.Views
             }
 
             // Save the game
-            bool result = _gameSaveService.SaveGame(saveName, player, currentLocation);
+            bool result = await _gameSaveService.SaveGameAsync(saveName, player, currentLocation);
 
             if (result)
             {
@@ -96,17 +97,20 @@ namespace RpgGame.Presentation.Views
         }
 
         /// <summary>
+        /// Synchronous version of ShowSaveGameInterfaceAsync
+        /// </summary>
+        public bool ShowSaveGameInterface(Character player, ILocation currentLocation)
+        {
+            return ShowSaveGameInterfaceAsync(player, currentLocation).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Shows the load game interface
         /// </summary>
         /// <param name="gameWorld">The game world reference for location lookup</param>
-        /// <param name="player">Output parameter for the loaded player character</param>
-        /// <param name="currentLocation">Output parameter for the loaded location</param>
-        /// <returns>True if a game was loaded successfully</returns>
-        public bool ShowLoadGameInterface(IGameWorld gameWorld, out Character player, out ILocation currentLocation)
+        /// <returns>A tuple containing success flag, loaded player character, and current location</returns>
+        public async Task<(bool Success, Character Player, ILocation CurrentLocation)> ShowLoadGameInterfaceAsync(IGameWorld gameWorld)
         {
-            player = null;
-            currentLocation = null;
-
             Console.Clear();
             Console.WriteLine("===================================");
             Console.WriteLine("=           LOAD GAME             =");
@@ -114,13 +118,13 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine();
 
             // List existing saves
-            List<(string SaveName, DateTime SaveDate)> existingSaves = _gameSaveService.GetAvailableSaves();
+            List<(string SaveName, DateTime SaveDate)> existingSaves = await _gameSaveService.GetAvailableSavesAsync();
             if (existingSaves.Count == 0)
             {
                 Console.WriteLine("No saved games found.");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
-                return false;
+                return (false, null, null);
             }
 
             Console.WriteLine("Available saves:");
@@ -138,7 +142,7 @@ namespace RpgGame.Presentation.Views
                 Console.WriteLine("Invalid selection.");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
-                return false;
+                return (false, null, null);
             }
 
             if (selection == 0)
@@ -146,16 +150,16 @@ namespace RpgGame.Presentation.Views
                 Console.WriteLine("Load cancelled.");
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
-                return false;
+                return (false, null, null);
             }
 
             // Get the selected save name
             string saveName = existingSaves[selection - 1].SaveName;
 
             // Load the game
-            bool result = _gameSaveService.LoadGame(saveName, gameWorld, out player, out currentLocation);
+            var result = await _gameSaveService.LoadGameAsync(saveName, gameWorld);
 
-            if (result)
+            if (result.Success)
             {
                 Console.WriteLine($"Game '{saveName}' loaded successfully.");
             }
@@ -170,10 +174,21 @@ namespace RpgGame.Presentation.Views
         }
 
         /// <summary>
+        /// Synchronous version of ShowLoadGameInterfaceAsync
+        /// </summary>
+        public bool ShowLoadGameInterface(IGameWorld gameWorld, out Character player, out ILocation currentLocation)
+        {
+            var result = ShowLoadGameInterfaceAsync(gameWorld).GetAwaiter().GetResult();
+            player = result.Player;
+            currentLocation = result.CurrentLocation;
+            return result.Success;
+        }
+
+        /// <summary>
         /// Shows the delete save interface
         /// </summary>
         /// <returns>True if a save was deleted successfully</returns>
-        public bool ShowDeleteSaveInterface()
+        public async Task<bool> ShowDeleteSaveInterfaceAsync()
         {
             Console.Clear();
             Console.WriteLine("===================================");
@@ -182,7 +197,7 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine();
 
             // List existing saves
-            List<(string SaveName, DateTime SaveDate)> existingSaves = _gameSaveService.GetAvailableSaves();
+            List<(string SaveName, DateTime SaveDate)> existingSaves = await _gameSaveService.GetAvailableSavesAsync();
             if (existingSaves.Count == 0)
             {
                 Console.WriteLine("No saved games found.");
@@ -233,7 +248,7 @@ namespace RpgGame.Presentation.Views
             }
 
             // Delete the save
-            bool result = _gameSaveService.DeleteSave(saveName);
+            bool result = await _gameSaveService.DeleteSaveAsync(saveName);
 
             if (result)
             {
@@ -247,6 +262,14 @@ namespace RpgGame.Presentation.Views
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return result;
+        }
+
+        /// <summary>
+        /// Synchronous version of ShowDeleteSaveInterfaceAsync
+        /// </summary>
+        public bool ShowDeleteSaveInterface()
+        {
+            return ShowDeleteSaveInterfaceAsync().GetAwaiter().GetResult();
         }
     }
 }

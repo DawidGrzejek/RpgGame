@@ -1,9 +1,11 @@
-﻿using RpgGame.Application.Services;
+﻿using RpgGame.Application.Interfaces.Services;
+using RpgGame.Application.Services;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.World;
 using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RpgGame.Presentation.Views
 {
@@ -14,12 +16,12 @@ namespace RpgGame.Presentation.Views
     {
         private readonly Character _player;
         private readonly IGameWorld _gameWorld;
-        private readonly GameSaveService _gameSaveService;
+        private readonly IGameSaveService _gameSaveService;
         private readonly AutoSaveService _autoSaveService;
         private ILocation _currentLocation;
         private bool _disposed = false;
 
-        public GameWorldView(Character player, GameWorld gameWorld, GameSaveService gameSaveService)
+        public GameWorldView(Character player, GameWorld gameWorld, IGameSaveService gameSaveService)
         {
             _player = player ?? throw new ArgumentNullException(nameof(player));
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
@@ -153,10 +155,16 @@ namespace RpgGame.Presentation.Views
         }
 
         // Method to save the current game
-        private void SaveGame()
+        private async Task SaveGameAsync()
         {
             var saveLoadView = new SaveLoadGameView(_gameSaveService);
-            saveLoadView.ShowSaveGameInterface(_player, _currentLocation);
+            await saveLoadView.ShowSaveGameInterfaceAsync(_player, _currentLocation);
+        }
+
+        // Synchronous version of SaveGameAsync
+        private void SaveGame()
+        {
+            SaveGameAsync().GetAwaiter().GetResult();
         }
 
         // These methods would implement the different actions
@@ -307,6 +315,5 @@ namespace RpgGame.Presentation.Views
         {
             Dispose(false);
         }
-
     }
 }

@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RpgGame.Domain.Events.Base;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace RpgGame.Infrastructure.Persistence.EFCore
 {
@@ -13,19 +10,33 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         public DbSet<GameSave> GameSaves { get; set; }
         public DbSet<StoredEvent> Events { get; set; }
 
+        // Default constructor for use without explicit options
+        public GameDbContext() : base()
+        {
+        }
+
+        // Constructor that accepts options for dependency injection and testing
+        public GameDbContext(DbContextOptions<GameDbContext> options) : base(options)
+        {
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Find the solution root directory by navigating up from the current assembly's location
-            string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-            string solutionDir = FindSolutionRootDirectory(currentDir);
+            if (!optionsBuilder.IsConfigured)
+            {
+                // Default configuration when options are not provided
+                // Find the solution root directory by navigating up from the current assembly's location
+                string currentDir = AppDomain.CurrentDomain.BaseDirectory;
+                string solutionDir = FindSolutionRootDirectory(currentDir);
 
-            // Create a Data directory in the solution root if it doesn't exist
-            string dataDir = Path.Combine(solutionDir, "Data");
-            Directory.CreateDirectory(dataDir);
+                // Create a Data directory in the solution root if it doesn't exist
+                string dataDir = Path.Combine(solutionDir, "Data");
+                Directory.CreateDirectory(dataDir);
 
-            string dbPath = Path.Combine(dataDir, "rpggame.db");
+                string dbPath = Path.Combine(dataDir, "rpggame.db");
 
-            optionsBuilder.UseSqlite($"Data Source={dbPath}");
+                optionsBuilder.UseSqlite($"Data Source={dbPath}");
+            }
         }
 
         private string FindSolutionRootDirectory(string startingPath)

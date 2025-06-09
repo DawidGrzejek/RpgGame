@@ -326,119 +326,245 @@ Contributions are welcome! Please follow these steps:
 3. Commit your changes with clear messages.  
 4. Submit a pull request for review.  
 
+
+
+```mermaid
+
+graph TD
+
+    subgraph "Domain Layer"
+        D[Domain Entities]
+        DI[Domain Interfaces]
+    end
+
+    subgraph "Application Layer"
+        I[Application Interfaces]
+        S[Application Services]
+        I --defines--> IGameSaveService
+        I --defines--> IGameSaveRepository
+        I --defines--> IEventStoreRepository
+        S --implements--> IGameSaveService
+        S --depends on--> IGameSaveRepository
+        S --depends on--> IEventStoreRepository
+        S --depends on--> D
+    end
+
+    subgraph "Infrastructure Layer"
+        DB[Database]
+        RI[Repository Implementations]
+        RI --implements--> IGameSaveRepository
+        RI --implements--> IEventStoreRepository
+        RI --uses--> DB
+    end
+    
+    subgraph "Presentation/API Layer"
+        P[Presentation UI]
+        C[Controllers]
+        P --uses--> IGameSaveService
+        C --uses--> IGameSaveService
+    end
+
+    %% Dependencies point inward
+    D ----> DI
+    P -.depends on.-> S
+    P -.depends on.-> I
+    C -.depends on.-> S
+    C -.depends on.-> I
+    S -.depends on.-> D
+    S -.depends on.-> DI
+    RI -.depends on.-> I
+    RI -.depends on.-> D
+    
+    %% Critical: Dependency Inversion
+    IGameSaveRepository -.defined by.-> I
+    IGameSaveRepository -.implemented by.-> RI
+    IEventStoreRepository -.defined by.-> I
+    IEventStoreRepository -.implemented by.-> RI
+    IGameSaveService -.defined by.-> I
+    IGameSaveService -.implemented by.-> S
+    
+    %% Composition Root
+    CR[Composition Root]
+    CR --registers--> RI
+    CR --registers--> S
+    CR --registers--> D
+
+```
+
+
 ---  
 
 ## **License**  
-This project is licensed under the MIT License. See the `LICENSE` file for details.### **2. Item Dependency Diagram**
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
 ### **2. Item Dependency Diagram**
-classDiagram
+
 ```mermaid
 classDiagram
-class ICharacter {
-    +string Name
-    +int Health
-    +int MaxHealth
-    +int Level
-    +bool IsAlive
-    +Attack()
-    +TakeDamage()
-    +Heal()
-    +LevelUp()
-}
+    class ICharacter {
+        +string Name
+        +int Health
+        +int MaxHealth
+        +int Level
+        +bool IsAlive
+        +Attack()
+        +TakeDamage()
+        +Heal()
+        +LevelUp()
+    }
 
-class Character {
-    -string Name
-    -int Health
-    -int MaxHealth
-    -int Level
-    -bool IsAlive
-    +Attack()
-    +TakeDamage()
-    +Heal()
-    +LevelUp()
-}
+    class Character {
+        -string Name
+        -int Health
+        -int MaxHealth
+        -int Level
+        -bool IsAlive
+        +Attack()
+        +TakeDamage()
+        +Heal()
+        +LevelUp()
+    }
 
-class PlayerCharacter {
-    +int Experience
-    +IInventory Inventory
-    +GainExperience()
-    +EquipItem()
-    +UseItem()
-    +UseSpecialAbility()
-}
+    class PlayerCharacter {
+        +int Experience
+        +IInventory Inventory
+        +GainExperience()
+        +EquipItem()
+        +UseItem()
+        +UseSpecialAbility()
+    }
 
-class NonPlayerCharacter {
-    +bool IsFriendly
-    +string Dialogue
-    +Interact()
-}
+    class NonPlayerCharacter {
+        +bool IsFriendly
+        +string Dialogue
+        +Interact()
+    }
 
-class Enemy {
-    +int ExperienceReward
-    +LootTable LootTable
-    +DropLoot()
-    +InitiateCombat()
-}
+    class Enemy {
+        +int ExperienceReward
+        +LootTable LootTable
+        +DropLoot()
+        +InitiateCombat()
+    }
 
-class Warrior {
-    +Create()
-}
+    class Warrior {
+        +Create()
+    }
 
-class Mage {
-    +int Mana
-    +int MaxMana
-    +Create()
-}
+    class Mage {
+        +int Mana
+        +int MaxMana
+        +Create()
+    }
 
-class Rogue {
-    +float CriticalChance
-    +Create()
-}
+    class Rogue {
+        +float CriticalChance
+        +Create()
+    }
 
-class IItem {
-    <<interface>>
-    +string Name
-    +string Description
-    +int Value
-    +ItemType Type
-}
+    class IItem {
+        <<interface>>
+        +string Name
+        +string Description
+        +int Value
+        +ItemType Type
+    }
 
-class IEquipment {
-    <<interface>>
-    +EquipmentSlot Slot
-    +int BonusValue
-    +OnEquip()
-    +OnUnequip()
-}
+    class IEquipment {
+        <<interface>>
+        +EquipmentSlot Slot
+        +int BonusValue
+        +OnEquip()
+        +OnUnequip()
+    }
 
-class IConsumable {
-    <<interface>>
-    +Consume()
-}
+    class IConsumable {
+        <<interface>>
+        +Consume()
+    }
 
-class IInventory {
-    <<interface>>
-    +List<IItem> Items
-    +int Capacity
-    +int Gold
-    +AddItem()
-    +RemoveItem()
-    +AddGold()
-    +SpendGold()
-}
+    class IInventory {
+        <<interface>>
+        +List~IItem~ Items
+        +int Capacity
+        +int Gold
+        +AddItem()
+        +RemoveItem()
+        +AddGold()
+        +SpendGold()
+    }
 
-ICharacter <|-- Character
-Character <|-- PlayerCharacter
-Character <|-- NonPlayerCharacter
-NonPlayerCharacter <|-- Enemy
-PlayerCharacter <|-- Warrior
-PlayerCharacter <|-- Mage
-PlayerCharacter <|-- Rogue
-IItem <|-- IEquipment
-IItem <|-- IConsumable
-PlayerCharacter --> IInventory
-IInventory --> IItem
+    ICharacter <|-- Character
+    Character <|-- PlayerCharacter
+    Character <|-- NonPlayerCharacter
+    NonPlayerCharacter <|-- Enemy
+    PlayerCharacter <|-- Warrior
+    PlayerCharacter <|-- Mage
+    PlayerCharacter <|-- Rogue
+    IItem <|-- IEquipment
+    IItem <|-- IConsumable
+    PlayerCharacter --> IInventory
+    IInventory --> IItem
+```
 
+```mermaid
+graph TD
+    subgraph "Domain Layer"
+        D[Domain Entities]
+        DI[Domain Interfaces]
+    end
+
+    subgraph "Application Layer"
+        I[Application Interfaces]
+        S[Application Services]
+        I --defines--> IGameSaveService
+        I --defines--> IGameSaveRepository
+        I --defines--> IEventStoreRepository
+        S --implements--> IGameSaveService
+        S --depends on--> IGameSaveRepository
+        S --depends on--> IEventStoreRepository
+        S --depends on--> D
+    end
+
+    subgraph "Infrastructure Layer"
+        DB[Database]
+        RI[Repository Implementations]
+        RI --implements--> IGameSaveRepository
+        RI --implements--> IEventStoreRepository
+        RI --uses--> DB
+    end
+    
+    subgraph "Presentation/API Layer"
+        P[Presentation UI]
+        C[Controllers]
+        P --uses--> IGameSaveService
+        C --uses--> IGameSaveService
+    end
+
+    %% Dependencies point inward
+    D ----> DI
+    P -.depends on.-> S
+    P -.depends on.-> I
+    C -.depends on.-> S
+    C -.depends on.-> I
+    S -.depends on.-> D
+    S -.depends on.-> DI
+    RI -.depends on.-> I
+    RI -.depends on.-> D
+    
+    %% Critical: Dependency Inversion
+    IGameSaveRepository -.defined by.-> Application Layer
+    IGameSaveRepository -.implemented by.-> RI
+    IEventStoreRepository -.defined by.-> Application Layer
+    IEventStoreRepository -.implemented by.-> RI
+    IGameSaveService -.defined by.-> Application Layer
+    IGameSaveService -.implemented by.-> S
+    
+    %% Composition Root
+    CR[Composition Root]
+    CR --registers--> RI
+    CR --registers--> S
+    CR --registers--> D
 ```
 
 

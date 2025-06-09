@@ -14,18 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RpgGame.Application\RpgGame.Application.csproj" />
-    <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
-    <ProjectReference Include="..\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
-    <ProjectReference Include="..\src\RpgGame.Application\RpgGame.Application.csproj" />
-    <ProjectReference Include="..\src\RpgGame.Domain\RpgGame.Domain.csproj" />
-    <ProjectReference Include="..\src\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="DTOs\Combat\" />
     <Folder Include="DTOs\Inventory\" />
     <Folder Include="DTOs\Quests\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RpgGame.Application\RpgGame.Application.csproj" />
+    <ProjectReference Include="..\RpgGame.Domain\RpgGame.Domain.csproj" />
+    <ProjectReference Include="..\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

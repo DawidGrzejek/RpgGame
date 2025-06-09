@@ -6,10 +6,14 @@ using RpgGame.Infrastructure.Persistence.EFCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RpgGame.Infrastructure.EventStore
 {
+    /// <summary>
+    /// Implementation of the IEventStoreRepository in the Infrastructure layer
+    /// </summary>
     public class EventStoreRepository : IEventStoreRepository
     {
         private readonly GameDbContext _context;
@@ -17,7 +21,7 @@ namespace RpgGame.Infrastructure.EventStore
 
         public EventStoreRepository(GameDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _jsonSettings = new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
@@ -45,18 +49,18 @@ namespace RpgGame.Infrastructure.EventStore
             return storedEvents.Select(DeserializeEvent);
         }
 
-        public async Task SaveEventAsync(IDomainEvent @event, string userId = null)
+        public async Task SaveEventAsync(IDomainEvent @event, string userId = null, CancellationToken cancellationToken = default)
         {
             var storedEvent = CreateStoredEvent(@event, userId);
-            await _context.Events.AddAsync(storedEvent);
-            await _context.SaveChangesAsync();
+            await _context.Events.AddAsync(storedEvent, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task SaveEventsAsync(IEnumerable<IDomainEvent> events, string userId = null)
+        public async Task SaveEventsAsync(IEnumerable<IDomainEvent> events, string userId = null, CancellationToken cancellationToken = default)
         {
             var storedEvents = events.Select(e => CreateStoredEvent(e, userId));
-            await _context.Events.AddRangeAsync(storedEvents);
-            await _context.SaveChangesAsync();
+            await _context.Events.AddRangeAsync(storedEvents, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         private StoredEvent CreateStoredEvent(IDomainEvent @event, string userId)

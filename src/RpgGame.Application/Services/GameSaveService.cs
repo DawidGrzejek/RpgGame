@@ -1,27 +1,31 @@
 ﻿using RpgGame.Application.Events;
+using RpgGame.Application.Interfaces.Services;
+using RpgGame.Application.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Events.Game;
 using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RpgGame.Application.Services
 {
     /// <summary>
     /// Service for managing game saves, including saving, loading, and listing game saves
     /// </summary>
-    public class GameSaveService : IDisposable
+    public class GameSaveService : IGameSaveService, IDisposable
     {
-        private readonly EfGameSaveRepository _saveRepository;
+        private readonly IGameSaveRepository _saveRepository;
+        private readonly IEventStoreRepository _eventStore;
         private int _currentPlayTime; // Track play time in seconds
         private DateTime _sessionStartTime;
         private bool _disposed = false;
-        private readonly IEventStoreRepository _eventStore;
 
-        public GameSaveService(IEventStoreRepository eventStore)
+        public GameSaveService(IGameSaveRepository saveRepository, IEventStoreRepository eventStore)
         {
-            _eventStore = eventStore;
-            _saveRepository = new EfGameSaveRepository();
+            _saveRepository = saveRepository ?? throw new ArgumentNullException(nameof(saveRepository));
+            _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
             _currentPlayTime = 0;
             _sessionStartTime = DateTime.Now;
         }
@@ -52,7 +56,11 @@ namespace RpgGame.Application.Services
         /// <param name="player">The player character</param>
         /// <param name="currentLocation">The current location</param>
         /// <returns>True if save was successful</returns>
-        public bool SaveGame(string saveName, Character player, ILocation currentLocation)
+        public async Task<bool> SaveGameAsync(
+            string saveName,
+            Character player,
+            ILocation currentLocation,
+            CancellationToken cancellationToken = default)
         {
             // Update play time before saving
             UpdatePlayTime();
@@ -68,9 +76,22 @@ namespace RpgGame.Application.Services
                 DateTime.UtcNow
             );
 
-            _eventStore.SaveEventAsync(saveEvent).GetAwaiter().GetResult();
+            await _eventStore.SaveEventAsync(saveEvent, cancellationToken: cancellationToken);
 
-            return _saveRepository.SaveGame(saveName, player, currentLocation, _currentPlayTime);
+            return await _saveRepository.SaveGameAsync(
+                saveName,
+                player,
+                currentLocation.Name,
+                _currentPlayTime,
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Synchronous version of SaveGameAsync
+        /// </summary>
+        public bool SaveGame(string saveName, Character player, ILocation currentLocation)
+        {
+            return SaveGameAsync(saveName, player, currentLocation).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -78,29 +99,68 @@ namespace RpgGame.Application.Services
         /// </summary>
         /// <param name="saveName">Name of the save to load</param>
         /// <param name="gameWorld">Game world reference for location lookup</param>
-        /// <param name="player">Output parameter for the loaded player</param>
-        /// <param name="currentLocation">Output parameter for the loaded location</param>
-        /// <returns>True if load was successful</returns>
-        public bool LoadGame(string saveName, IGameWorld gameWorld, out Character player, out ILocation currentLocation)
+        /// <returns>Tuple containing success flag, player character, and current location</returns>
+        public async Task<(bool Success, Character Player, ILocation CurrentLocation)> LoadGameAsync(
+            string saveName,
+            IGameWorld gameWorld,
+            CancellationToken cancellationToken = default)
         {
-            bool result = _saveRepository.LoadGame(saveName, gameWorld, out player, out currentLocation, out int playTime);
+            var result = await _saveRepository.LoadGameAsync(saveName, cancellationToken);
 
-            if (result)
+            if (!result.Success)
             {
-                _currentPlayTime = playTime;
-                _sessionStartTime = DateTime.Now; // Reset session start time
+                return (false, null, null);
             }
 
-            return result;
+            // Get the location from the game world
+            ILocation currentLocation = gameWorld.GetLocation(result.CurrentLocationName);
+            if (currentLocation == null)
+            {
+                // If location not found, use starting location
+                Console.WriteLine($"Location '{result.CurrentLocationName}' not found. Using starting location.");
+                currentLocation = gameWorld.StartLocation;
+            }
+
+            // Set play time
+            _currentPlayTime = result.PlayTime;
+            _sessionStartTime = DateTime.Now; // Reset session start time
+
+            return (true, result.PlayerCharacter, currentLocation);
+        }
+
+        /// <summary>
+        /// Synchronous version of LoadGameAsync
+        /// </summary>
+        public bool LoadGame(
+            string saveName,
+            IGameWorld gameWorld,
+            out Character player,
+            out ILocation currentLocation)
+        {
+            var result = LoadGameAsync(saveName, gameWorld).GetAwaiter().GetResult();
+
+            player = result.Player;
+            currentLocation = result.CurrentLocation;
+
+            return result.Success;
         }
 
         /// <summary>
         /// Gets a list of all available save files
         /// </summary>
         /// <returns>List of save names with their save dates</returns>
+        public async Task<List<(string SaveName, DateTime SaveDate)>> GetAvailableSavesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _saveRepository.GetAllSavesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Synchronous version of GetAvailableSavesAsync
+        /// </summary>
         public List<(string SaveName, DateTime SaveDate)> GetAvailableSaves()
         {
-            return _saveRepository.GetAllSaves();
+            return GetAvailableSavesAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -108,9 +168,17 @@ namespace RpgGame.Application.Services
         /// </summary>
         /// <param name="saveName">Name of the save to delete</param>
         /// <returns>True if deletion was successful</returns>
+        public async Task<bool> DeleteSaveAsync(string saveName, CancellationToken cancellationToken = default)
+        {
+            return await _saveRepository.DeleteSaveAsync(saveName, cancellationToken);
+        }
+
+        /// <summary>
+        /// Synchronous version of DeleteSaveAsync
+        /// </summary>
         public bool DeleteSave(string saveName)
         {
-            return _saveRepository.DeleteSave(saveName);
+            return DeleteSaveAsync(saveName).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -144,37 +212,33 @@ namespace RpgGame.Application.Services
             }
         }
 
-        /// <summary>
-        /// Disposes the repository
-        /// </summary>
+        #region IDisposable Implementation
+
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Disposes the repository
-        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    _saveRepository?.Dispose();
+                    // Dispose any owned disposable resources
+                    (_saveRepository as IDisposable)?.Dispose();
                 }
 
                 _disposed = true;
             }
         }
 
-        /// <summary>
-        /// Finalizer
-        /// </summary>
         ~GameSaveService()
         {
             Dispose(false);
         }
+
+        #endregion
     }
 }

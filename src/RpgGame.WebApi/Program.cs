@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using RpgGame.Application; // For application layer DI extension
 using RpgGame.Application.Events;
+using RpgGame.Domain; // For domain layer DI extension
 using RpgGame.Domain.Events.Characters;
-using RpgGame.Infrastructure;
+using RpgGame.Infrastructure; // For infrastructure layer DI extension
 using RpgGame.WebApi.Filters;
 using RpgGame.WebApi.Hubs;
 using RpgGame.WebApi.Services;
@@ -21,8 +23,15 @@ builder.Services.AddControllers(options =>
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// Register application and infrastructure services
+// Register layers in the correct order (inner to outer)
+
+// 1. Domain layer (doesn't depend on other layers)
+builder.Services.AddDomainServices();
+
+// 2. Application layer (depends on Domain)
 builder.Services.AddApplicationServices();
+
+// 3. Infrastructure layer (implements Application interfaces)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Add AutoMapper
