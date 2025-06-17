@@ -2,7 +2,9 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using RpgGame.Application.Commands;
 using RpgGame.Application.Commands.Characters;
+using RpgGame.Application.Interfaces.Services;
 using RpgGame.Application.Queries.Characters;
 using RpgGame.WebApi.DTOs.Characters;
 using System;
@@ -21,16 +23,28 @@ namespace RpgGame.WebApi.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
+        private readonly ILogger<CharactersController> _logger;
+        private readonly ICharacterService _characterService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CharactersController"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator for handling commands and queries.</param>
-        /// <param name="mapper">The mapper for transforming objects.</param>
-        public CharactersController(IMediator mediator, IMapper mapper)
+        /// <param name="mediator">The mediator instance used for handling requests and commands.</param>
+        /// <param name="mapper">The mapper instance used for mapping objects between models and DTOs.</param>
+        /// <param name="logger">The logger instance used for logging application events and errors.</param>
+        /// <param name="characterService">The service instance used for managing character-related operations.</param>
+        /// <exception cref="ArgumentNullException">Thrown if any of the parameters <paramref name="mediator"/>, <paramref name="mapper"/>, <paramref
+        /// name="logger"/>, or <paramref name="characterService"/> is <see langword="null"/>.</exception>
+        public CharactersController(
+            IMediator mediator,
+            IMapper mapper,
+            ILogger<CharactersController> logger,
+            ICharacterService characterService)
         {
-            _mediator = mediator;
-            _mapper = mapper;
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         }
 
         /// <summary>
@@ -75,7 +89,7 @@ namespace RpgGame.WebApi.Controllers
         public async Task<ActionResult<CharacterDto>> CreateCharacter(CreateCharacterDto createCharacterDto)
         {
             var command = _mapper.Map<CreateCharacterCommand>(createCharacterDto);
-            var result = await _mediator.Send(command);
+            CommandResult result = await _mediator.Send<CommandResult>(command);
 
             if (!result.Success)
                 return BadRequest(result.Message);
@@ -93,7 +107,7 @@ namespace RpgGame.WebApi.Controllers
         public async Task<ActionResult> LevelUp(Guid id)
         {
             var command = new LevelUpCharacterCommand { CharacterId = id };
-            var result = await _mediator.Send(command);
+            CommandResult result = await _mediator.Send<CommandResult>(command);
 
             if (!result.Success)
                 return NotFound(result.Message);

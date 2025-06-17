@@ -43,7 +43,7 @@ namespace RpgGame.IntegrationTests.Application.Services
             services.AddSingleton<IGameWorld>(provider => provider.GetRequiredService<GameWorld>());
 
             // Register application services
-            RpgGame.Application.DependencyInjection.AddGameSaveServices(services);
+            //RpgGame.Application.DependencyInjection.AddGameSaveServices(services);
 
             // Register event store (simplified for tests)
             services.AddScoped<IEventStoreRepository, TestEventStoreRepository>();

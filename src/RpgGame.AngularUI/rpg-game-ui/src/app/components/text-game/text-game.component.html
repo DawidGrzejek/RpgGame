@@ -1,0 +1,260 @@
+<div class="text-game-container">
+  <!-- Game Header -->
+  <div class="game-header">
+    <h1 class="game-title">⚔️ RPG Adventure</h1>
+    <div class="game-controls">
+      <button class="control-btn new-game-btn"
+              (click)="openNewGameDialog()"
+              [disabled]="isProcessingCommand">
+        New Game
+      </button>
+      <button class="control-btn load-game-btn"
+              (click)="openLoadGameDialog()"
+              [disabled]="isProcessingCommand">
+        Load Game
+      </button>
+    </div>
+  </div>
+
+  <!-- Character Stats Panel (shown when game is active) -->
+  <div class="character-panel" *ngIf="gameState?.gameStarted && gameState?.currentCharacter">
+    <div class="character-info">
+      <h3>{{ gameState.currentCharacter.name }}</h3>
+      <p class="character-class">Level {{ gameState.currentCharacter.level }} {{ gameState.currentCharacter.characterType }}</p>
+
+      <!-- Health Bar -->
+      <div class="stat-bar">
+        <label>Health</label>
+        <div class="progress-bar health-bar">
+          <div class="progress-fill health-fill"
+               [style.width.%]="getHealthPercentage()">
+          </div>
+          <span class="progress-text">
+            {{ gameState.currentCharacter.health }}/{{ gameState.currentCharacter.maxHealth }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Experience Bar -->
+      <div class="stat-bar">
+        <label>Experience</label>
+        <div class="progress-bar exp-bar">
+          <div class="progress-fill exp-fill"
+               [style.width.%]="getExperiencePercentage()">
+          </div>
+          <span class="progress-text">
+            {{ gameState.currentCharacter.experience }}/{{ gameState.currentCharacter.experienceToNextLevel }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Mage Mana Bar -->
+      <div class="stat-bar" *ngIf="gameState.currentCharacter.characterType === 'Mage' && gameState.currentCharacter.mana !== undefined">
+        <label>Mana</label>
+        <div class="progress-bar mana-bar">
+          <div class="progress-fill mana-fill"
+               [style.width.%]="(gameState.currentCharacter.mana! / gameState.currentCharacter.maxMana!) * 100">
+          </div>
+          <span class="progress-text">
+            {{ gameState.currentCharacter.mana }}/{{ gameState.currentCharacter.maxMana }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Rogue Critical Chance -->
+      <div class="stat-item" *ngIf="gameState.currentCharacter.characterType === 'Rogue' && gameState.currentCharacter.criticalChance !== undefined">
+        <label>Critical Chance:</label>
+        <span>{{ (gameState.currentCharacter.criticalChance! * 100).toFixed(1) }}%</span>
+      </div>
+    </div>
+
+    <!-- Location Info -->
+    <div class="location-info" *ngIf="gameState.currentLocation">
+      <h4>📍 {{ gameState.currentLocation.name }}</h4>
+      <p class="location-description">{{ gameState.currentLocation.description }}</p>
+
+      <!-- Combat Status -->
+      <div class="combat-status" *ngIf="gameState.isInCombat && gameState.currentEnemy">
+        <div class="enemy-info">
+          <h5>🗡️ {{ gameState.currentEnemy.name }}</h5>
+          <div class="enemy-health-bar">
+            <div class="progress-fill enemy-health-fill"
+                 [style.width.%]="(gameState.currentEnemy.health / gameState.currentEnemy.maxHealth) * 100">
+            </div>
+            <span class="progress-text">
+              {{ gameState.currentEnemy.health }}/{{ gameState.currentEnemy.maxHealth }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Game Area -->
+  <div class="game-main" *ngIf="gameState?.gameStarted; else welcomeScreen">
+    <!-- Game Log -->
+    <div class="game-log-container">
+      <div class="game-log" #gameLog>
+        <div *ngFor="let entry of gameState.gameLog; trackBy: trackByLogEntry"
+             [class]="getLogEntryClass(entry)">
+
+          <span class="log-timestamp">{{ formatTimestamp(entry.timestamp) }}</span>
+          <span class="log-message" [innerHTML]="entry.message"></span>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="log-entry log-system" *ngIf="isProcessingCommand">
+          <span class="log-message">Processing...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Command Input Area -->
+    <div class="command-area">
+      <!-- Quick Action Buttons -->
+      <div class="quick-actions">
+        <button *ngFor="let action of getQuickActions()"
+                class="quick-action-btn"
+                (click)="quickCommand(action)"
+                [disabled]="isProcessingCommand">
+          {{ action }}
+        </button>
+      </div>
+
+      <!-- Command Input -->
+      <div class="command-input-container">
+        <span class="command-prompt">></span>
+        <input #commandInput
+               type="text"
+               class="command-input"
+               [(ngModel)]="currentCommand"
+               (keydown)="onKeyDown($event)"
+               [disabled]="isProcessingCommand || gameState?.gameOver"
+               placeholder="Enter command... (type 'help' for commands)"
+               autocomplete="off">
+        <button class="submit-btn"
+                (click)="onSubmitCommand()"
+                [disabled]="isProcessingCommand || !currentCommand.trim() || gameState?.gameOver">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome Screen -->
+  <ng-template #welcomeScreen>
+    <div class="welcome-screen">
+      <div class="welcome-content">
+        <h2>🏰 Welcome to RPG Adventure!</h2>
+        <p>A text-based role-playing game where your choices shape your destiny.</p>
+
+        <div class="welcome-actions">
+          <button class="primary-btn" (click)="openNewGameDialog()">
+            🆕 Start New Game
+          </button>
+          <button class="secondary-btn" (click)="openLoadGameDialog()">
+            📁 Load Game
+          </button>
+        </div>
+
+        <div class="game-features">
+          <h3>Features:</h3>
+          <ul>
+            <li>🎭 Three unique character classes</li>
+            <li>⚔️ Turn-based combat system</li>
+            <li>🌍 Explorable world with multiple locations</li>
+            <li>📈 Character progression and leveling</li>
+            <li>💰 Inventory and item management</li>
+            <li>💾 Save/Load game functionality</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- New Game Dialog -->
+  <div class="modal-overlay" *ngIf="showNewGameDialog" (click)="closeNewGameDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Create New Character</h3>
+
+      <div class="form-group">
+        <label for="characterName">Character Name:</label>
+        <input id="characterName"
+               type="text"
+               [(ngModel)]="newCharacterName"
+               placeholder="Enter character name"
+               maxlength="20"
+               class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label>Character Class:</label>
+        <div class="character-types">
+          <div *ngFor="let type of characterTypes"
+               class="character-type-option"
+               [class.selected]="selectedCharacterType === type"
+               (click)="selectedCharacterType = type">
+
+            <div class="type-header">
+              <input type="radio"
+                     [value]="type"
+                     [(ngModel)]="selectedCharacterType"
+                     [id]="'type-' + type">
+              <label [for]="'type-' + type" class="type-name">{{ type }}</label>
+            </div>
+            <p class="type-description">{{ getCharacterTypeDescription(type) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="primary-btn"
+                (click)="createNewGame()"
+                [disabled]="!newCharacterName.trim()">
+          Create Character
+        </button>
+        <button class="secondary-btn" (click)="closeNewGameDialog()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Game Dialog -->
+  <div class="modal-overlay" *ngIf="showLoadGameDialog" (click)="closeLoadGameDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Load Saved Game</h3>
+
+      <div class="saved-games-list" *ngIf="savedGames.length > 0; else noSavedGames">
+        <div *ngFor="let save of savedGames"
+             class="saved-game-item"
+             (click)="loadGame(save.characterId)">
+
+          <div class="save-info">
+            <h4>{{ save.characterName }}</h4>
+            <p>Level {{ save.level }} {{ save.characterType }}</p>
+            <p class="save-date">{{ save.saveDate | date:'medium' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noSavedGames>
+        <p class="no-saves">No saved games found.</p>
+      </ng-template>
+
+      <div class="modal-actions">
+        <button class="secondary-btn" (click)="closeLoadGameDialog()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  // =============================================================================
+  // TRACK BY FUNCTION FOR PERFORMANCE
+  // =============================================================================
+
+  trackByLogEntry(index: number, entry: GameLogEntry): string {
+  return entry.id;
+  }

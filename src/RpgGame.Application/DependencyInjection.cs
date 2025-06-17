@@ -2,11 +2,15 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using RpgGame.Application.Behaviors;
+using RpgGame.Application.Commands.Combat;
+using RpgGame.Application.Commands.Game;
+using RpgGame.Application.Commands.Results;
 using RpgGame.Application.Events;
 using RpgGame.Application.Events.Handlers.Character;
 using RpgGame.Application.Interfaces.Services;
 using RpgGame.Application.Repositories;
 using RpgGame.Application.Services;
+using RpgGame.Domain.Common;
 using RpgGame.Domain.Events.Characters;
 using System.Reflection;
 
@@ -34,6 +38,12 @@ public static class DependencyInjection
         // Register event handlers
         services.AddScoped<IEventHandler<CharacterLeveledUp>, CharacterLeveledUpHandler>();
         services.AddScoped<IEventHandler<CharacterDied>, CharacterDiedHandler>();
+
+        // In your Application layer DependencyInjection.cs
+        services.AddScoped<IRequestHandler<PerformAttackCommand, OperationResult<CombatResult>>, PerformAttackCommandHandler>();
+        services.AddScoped<IRequestHandler<FleeCombatCommand, OperationResult<FleeResult>>, FleeCombatCommandHandler>();
+        services.AddScoped<IRequestHandler<MoveCharacterCommand, OperationResult<LocationChangeResult>>, MoveCharacterCommandHandler>();
+        services.AddScoped<IRequestHandler<ExploreLocationCommand, OperationResult<ExploreResult>>, ExploreLocationCommandHandler>();
 
         return services;
     }

@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace RpgGame.IntegrationTests
 {
     public class UnitTest1

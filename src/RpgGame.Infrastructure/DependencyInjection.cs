@@ -59,6 +59,7 @@ namespace RpgGame.Infrastructure
             // 3. Register domain repositories - implement Application interfaces with Infrastructure implementations
             services.AddScoped<ICharacterRepository, CharacterRepository>();
             services.AddScoped<IGameSaveRepository, GameSaveRepository>();
+            //services.AddScoped<IItemRepository, ItemRepository>();
 
             return services;
         }

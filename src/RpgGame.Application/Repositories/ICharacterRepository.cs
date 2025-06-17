@@ -1,4 +1,5 @@
-﻿using RpgGame.Domain.Entities.Characters.Base;
+﻿using RpgGame.Domain.Common;
+using RpgGame.Domain.Entities.Characters.Base;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,10 +8,10 @@ namespace RpgGame.Application.Repositories
 {
     public interface ICharacterRepository
     {
-        Task<Character> GetByIdAsync(Guid id);
-        Task<IReadOnlyList<Character>> GetAllAsync();
-        Task<Guid> AddAsync(Character character);
-        Task UpdateAsync(Character character);
-        Task DeleteAsync(Guid id);
+        Task<OperationResult<Character>> GetByIdAsync(Guid id);
+        Task<OperationResult<IReadOnlyList<Character>>> GetAllAsync();
+        Task<OperationResult<Guid>> AddAsync(Character character);
+        Task<OperationResult> UpdateAsync(Character character);
+        Task<OperationResult> DeleteAsync(Guid id);
     }
 }

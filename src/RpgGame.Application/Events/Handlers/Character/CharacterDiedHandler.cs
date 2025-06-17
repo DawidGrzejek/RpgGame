@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
+using RpgGame.Application.Commands.Characters;
 using RpgGame.Application.Services;
+using RpgGame.Domain.Common;
 using RpgGame.Domain.Events.Characters;
 using System;
 using System.Collections.Generic;
@@ -14,26 +17,38 @@ namespace RpgGame.Application.Events.Handlers.Character
      /// </summary>
     public class CharacterDiedHandler : IEventHandler<CharacterDied>
     {
+        private readonly IMediator _mediator;
         private readonly ILogger<CharacterDiedHandler> _logger;
-        // Inject game state or repositories
 
-        public CharacterDiedHandler(ILogger<CharacterDiedHandler> logger)
+        public CharacterDiedHandler(
+            IMediator mediator,
+            ILogger<CharacterDiedHandler> logger)
         {
+            _mediator = mediator;
             _logger = logger;
         }
 
         public async Task HandleAsync(CharacterDied @event, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Character {CharacterName} died at location {@Location}",
-                @event.CharacterName,
-                @event.Location);
+            _logger.LogInformation("Character {CharacterName} died at location {Location}",
+                @event.CharacterName, @event.Location);
 
-            // Record death statistics
-            // Maybe update leaderboards
-            // Handle permadeath or respawn logic
+            // The domain event triggers the complex death processing command
+            var deathCommand = new ProcessCharacterDeathCommand
+            {
+                CharacterId = @event.AggregateId,
+                LocationName = @event.Location,
+                CauseOfDeath = "Unknown", // Could be enhanced to pass this info
+                IsPlayerCharacter = true // Could be determined from character type
+            };
 
-            await Task.CompletedTask; // Replace with actual async work
+            var result = await _mediator.Send<OperationResult<CharacterDeathResult>>(deathCommand, cancellationToken);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogError("Failed to process character death: {Errors}",
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
         }
     }
 }

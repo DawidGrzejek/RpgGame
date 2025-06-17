@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using RpgGame.Application.Commands;
 using RpgGame.Application.Commands.Inventory;
 using RpgGame.Application.Queries.Inventory;
 using RpgGame.Application.Serialization.DTOs;
-using RpgGame.WebApi.DTOs.Inventory;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -64,7 +64,7 @@ namespace RpgGame.WebApi.Controllers
                 ItemId = itemId
             };
 
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send<CommandResult>(command);
 
             if (!result.Success)
                 return BadRequest(result.Message);

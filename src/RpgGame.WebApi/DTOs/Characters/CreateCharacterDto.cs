@@ -1,5 +1,6 @@
 ﻿// Rusing RpgGame.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using RpgGame.Domain.Enums;
 
 namespace RpgGame.WebApi.DTOs.Characters
 {

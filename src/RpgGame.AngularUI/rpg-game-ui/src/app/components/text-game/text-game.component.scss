@@ -1,0 +1,979 @@
+
+// Color palette inspired by classic terminal/RPG games
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-accent: #2a2a2a;
+  --text-primary: #00ff00; // Classic green terminal text
+  --text-secondary: #ffffff;
+  --text-muted: #888888;
+  --text-warning: #ffaa00;
+  --text-error: #ff4444;
+  --text-success: #44ff44;
+  --text-combat: #ff6666;
+  --text-system: #00aaff;
+  --border-color: #333333;
+  --health-color: #4caf50;
+  --mana-color: #2196f3;
+  --exp-color: #ffc107;
+  --enemy-color: #f44336;
+}
+
+.text-game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+  overflow: hidden;
+  // =============================================================================
+  // GAME HEADER
+  // =============================================================================
+
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+    .game-title {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--text-success);
+      text-shadow: 0 0 10px var(--text-success);
+      letter-spacing: 2px;
+    }
+
+    .game-controls {
+      display: flex;
+      gap: 1rem;
+
+      .control-btn {
+        padding: 0.5rem 1rem;
+        background: var(--bg-accent);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          background: var(--border-color);
+          box-shadow: 0 0 5px var(--text-primary);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // CHARACTER PANEL
+  // =============================================================================
+
+  .character-panel {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+
+    .character-info {
+      flex: 1;
+      min-width: 300px;
+
+      h3 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.3rem;
+        color: var(--text-success);
+      }
+
+      .character-class {
+        margin: 0 0 1rem 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .stat-bar {
+        margin-bottom: 0.75rem;
+
+        label {
+          display: block;
+          margin-bottom: 0.25rem;
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .progress-bar {
+          position: relative;
+          height: 20px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 2px;
+          overflow: hidden;
+
+          .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            position: relative;
+
+            &.health-fill {
+              background: linear-gradient(90deg, var(--health-color) 0%, #66bb6a 100%);
+            }
+
+            &.exp-fill {
+              background: linear-gradient(90deg, var(--exp-color) 0%, #ffecb3 100%);
+            }
+
+            &.mana-fill {
+              background: linear-gradient(90deg, var(--mana-color) 0%, #64b5f6 100%);
+            }
+
+            &.enemy-health-fill {
+              background: linear-gradient(90deg, var(--enemy-color) 0%, #ef5350 100%);
+            }
+          }
+
+          .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 2;
+          }
+        }
+      }
+
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+
+        label {
+          color: var(--text-secondary);
+        }
+
+        span {
+          color: var(--text-primary);
+          font-weight: bold;
+        }
+      }
+    }
+
+    .location-info {
+      flex: 1;
+      min-width: 250px;
+
+      h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-system);
+        font-size: 1.1rem;
+      }
+
+      .location-description {
+        margin: 0 0 1rem 0;
+        color: var(--text-muted);
+        font-style: italic;
+        line-height: 1.4;
+      }
+
+      .combat-status {
+        padding: 0.75rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--text-combat);
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(255, 102, 102, 0.3);
+
+        .enemy-info {
+          h5 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-combat);
+            font-size: 1rem;
+          }
+
+          .enemy-health-bar {
+            position: relative;
+            height: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+          }
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // MAIN GAME AREA
+  // =============================================================================
+
+  .game-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
+    .game-log-container {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      overflow: hidden;
+
+      .game-log {
+        height: 100%;
+        overflow-y: auto;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: var(--bg-secondary);
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: var(--border-color);
+          border-radius: 4px;
+
+          &:hover {
+            background: var(--text-muted);
+          }
+        }
+
+        .log-entry {
+          margin-bottom: 0.5rem;
+          padding: 0.25rem 0;
+          word-wrap: break-word;
+
+          .log-timestamp {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+          }
+
+          .log-message {
+            white-space: pre-wrap;
+          }
+          // Log entry types
+          &.log-info .log-message {
+            color: var(--text-primary);
+          }
+
+          &.log-success .log-message {
+            color: var(--text-success);
+            font-weight: bold;
+          }
+
+          &.log-error .log-message {
+            color: var(--text-error);
+            font-weight: bold;
+          }
+
+          &.log-warning .log-message {
+            color: var(--text-warning);
+          }
+
+          &.log-combat .log-message {
+            color: var(--text-combat);
+            font-weight: bold;
+          }
+
+          &.log-system .log-message {
+            color: var(--text-system);
+            font-style: italic;
+          }
+        }
+      }
+    }
+
+    .command-area {
+      padding: 1rem 1.5rem;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+
+      .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        .quick-action-btn {
+          padding: 0.5rem 1rem;
+          background: var(--bg-accent);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background: var(--border-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 255, 0, 0.2);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .command-input-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .command-prompt {
+          color: var(--text-success);
+          font-weight: bold;
+          font-size: 1.1rem;
+        }
+
+        .command-input {
+          flex: 1;
+          padding: 0.75rem;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          font-family: inherit;
+          font-size: 1rem;
+          outline: none;
+
+          &:focus {
+            border-color: var(--text-success);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+          }
+
+          &::placeholder {
+            color: var(--text-muted);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+
+        .submit-btn {
+          padding: 0.75rem 1.5rem;
+          background: var(--text-success);
+          color: var(--bg-primary);
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-family: inherit;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.4);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // WELCOME SCREEN
+  // =============================================================================
+
+  .welcome-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    .welcome-content {
+      text-align: center;
+      max-width: 600px;
+
+      h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-success);
+        text-shadow: 0 0 20px var(--text-success);
+      }
+
+      p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      .welcome-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+
+        .primary-btn, .secondary-btn {
+          padding: 1rem 2rem;
+          font-family: inherit;
+          font-size: 1.1rem;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+          background: var(--text-success);
+          color: var(--bg-primary);
+
+          &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.4);
+          }
+        }
+
+        .secondary-btn {
+          background: var(--bg-accent);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+
+          &:hover {
+            background: var(--border-color);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+
+      .game-features {
+        text-align: left;
+        background: var(--bg-secondary);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+
+        h3 {
+          margin-top: 0;
+          color: var(--text-system);
+          font-size: 1.3rem;
+        }
+
+        ul {
+          list-style: none;
+          padding: 0;
+
+          li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            font-size: 1rem;
+
+            &:before {
+              content: "▶ ";
+              color: var(--text-success);
+              font-weight: bold;
+            }
+          }
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // MODAL DIALOGS
+  // =============================================================================
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+      h3 {
+        margin-top: 0;
+        color: var(--text-success);
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: var(--text-secondary);
+          font-weight: bold;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 0.75rem;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          font-family: inherit;
+          font-size: 1rem;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: var(--text-success);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+          }
+        }
+
+        .character-types {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+
+          .character-type-option {
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              border-color: var(--text-success);
+            }
+
+            &.selected {
+              border-color: var(--text-success);
+              background: rgba(0, 255, 0, 0.1);
+            }
+
+            .type-header {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.5rem;
+
+              input[type="radio"] {
+                accent-color: var(--text-success);
+              }
+
+              .type-name {
+                font-weight: bold;
+                color: var(--text-primary);
+                cursor: pointer;
+              }
+            }
+
+            .type-description {
+              margin: 0;
+              font-size: 0.9rem;
+              color: var(--text-muted);
+              line-height: 1.4;
+            }
+          }
+        }
+      }
+
+      .saved-games-list {
+        max-height: 300px;
+        overflow-y: auto;
+
+        .saved-game-item {
+          padding: 1rem;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          margin-bottom: 0.5rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: var(--text-success);
+            transform: translateX(5px);
+          }
+
+          .save-info {
+            h4 {
+              margin: 0 0 0.25rem 0;
+              color: var(--text-success);
+              font-size: 1.1rem;
+            }
+
+            p {
+              margin: 0.25rem 0;
+              font-size: 0.9rem;
+
+              &:not(.save-date) {
+                color: var(--text-secondary);
+              }
+
+              &.save-date {
+                color: var(--text-muted);
+                font-size: 0.8rem;
+              }
+            }
+          }
+        }
+      }
+
+      .no-saves {
+        text-align: center;
+        color: var(--text-muted);
+        font-style: italic;
+        padding: 2rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+
+        .primary-btn, .secondary-btn {
+          padding: 0.75rem 1.5rem;
+          font-family: inherit;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .primary-btn {
+          background: var(--text-success);
+          color: var(--bg-primary);
+
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.4);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+
+        .secondary-btn {
+          background: var(--bg-accent);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+
+          &:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // RESPONSIVE DESIGN
+  // =============================================================================
+
+  @media (max-width: 768px) {
+    .game-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+
+      .game-title {
+        font-size: 1.5rem;
+      }
+
+      .game-controls {
+        justify-content: center;
+      }
+    }
+
+    .character-panel {
+      flex-direction: column;
+      gap: 1rem;
+
+      .character-info,
+      .location-info {
+        min-width: auto;
+      }
+    }
+
+    .command-area {
+      .quick-actions {
+        justify-content: center;
+
+        .quick-action-btn {
+          flex: 1;
+          min-width: 80px;
+        }
+      }
+
+      .command-input-container {
+        flex-direction: column;
+        gap: 1rem;
+
+        .command-input {
+          order: 1;
+        }
+
+        .submit-btn {
+          order: 2;
+          width: 100%;
+        }
+
+        .command-prompt {
+          order: 0;
+          text-align: center;
+        }
+      }
+    }
+
+    .welcome-screen {
+      .welcome-content {
+        h2 {
+          font-size: 2rem;
+        }
+
+        .welcome-actions {
+          flex-direction: column;
+          align-items: center;
+
+          .primary-btn,
+          .secondary-btn {
+            width: 100%;
+            max-width: 300px;
+          }
+        }
+      }
+    }
+
+    .modal-overlay {
+      padding: 0.5rem;
+
+      .modal-content {
+        padding: 1rem;
+
+        .character-types {
+          .character-type-option {
+            padding: 0.75rem;
+          }
+        }
+
+        .modal-actions {
+          flex-direction: column;
+
+          .primary-btn,
+          .secondary-btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+  // =============================================================================
+  // ACCESSIBILITY ENHANCEMENTS
+  // =============================================================================
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  // High contrast mode
+  @media (prefers-contrast: high) {
+    :root {
+      --bg-primary: #000000;
+      --bg-secondary: #111111;
+      --bg-accent: #222222;
+      --text-primary: #ffffff;
+      --border-color: #666666;
+    }
+  }
+  // Focus indicators for keyboard navigation
+  button:focus-visible,
+  input:focus-visible,
+  .character-type-option:focus-visible,
+  .saved-game-item:focus-visible {
+    outline: 2px solid var(--text-success);
+    outline-offset: 2px;
+  }
+  // =============================================================================
+  // ANIMATIONS AND EFFECTS
+  // =============================================================================
+
+  @keyframes glow {
+    0% {
+      text-shadow: 0 0 5px var(--text-success);
+    }
+
+    50% {
+      text-shadow: 0 0 20px var(--text-success), 0 0 30px var(--text-success);
+    }
+
+    100% {
+      text-shadow: 0 0 5px var(--text-success);
+    }
+  }
+
+  @keyframes slideInFromBottom {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+  // Apply animations
+  .game-title {
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  .log-entry {
+    animation: slideInFromBottom 0.3s ease-out;
+  }
+
+  .combat-status {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  // Typing effect for system messages
+  .log-system .log-message {
+    overflow: hidden;
+    border-right: 2px solid var(--text-system);
+    white-space: nowrap;
+    animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes blink-caret {
+    from, to {
+      border-color: transparent;
+    }
+
+    50% {
+      border-color: var(--text-system);
+    }
+  }
+  // =============================================================================
+  // PRINT STYLES (for saving game logs)
+  // =============================================================================
+
+  @media print {
+    .text-game-container {
+      height: auto;
+      background: white;
+      color: black;
+
+      .game-header,
+      .character-panel,
+      .command-area,
+      .modal-overlay {
+        display: none;
+      }
+
+      .game-log {
+        border: none;
+        background: white;
+        height: auto;
+
+        .log-entry {
+          color: black;
+          page-break-inside: avoid;
+
+          .log-timestamp {
+            color: #666;
+          }
+
+          &.log-success .log-message,
+          &.log-error .log-message,
+          &.log-combat .log-message {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}
