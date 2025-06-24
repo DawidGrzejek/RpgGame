@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using RpgGame.Application.Commands;
 using RpgGame.Application.Commands.Combat;
 using RpgGame.Application.Commands.Game;
 using RpgGame.Application.Commands.Results;
@@ -8,12 +9,21 @@ using RpgGame.WebApi.DTOs.Requests;
 
 namespace RpgGame.WebApi.Controllers
 {
+    /// <summary>
+    /// Controller for managing combat operations in the RPG game.
+    /// </summary>
     [ApiController]
     [Route("api/v{version:apiVersion}/combat")]
     public class CombatController : ControllerBase
     {
         private readonly IMediator _mediator;
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CombatController"/> class.
+        /// </summary>
+        /// <param name="mediator">The mediator instance for handling commands and queries.</param>
+        /// <param name="mapper">The mapper instance for mapping between DTOs and domain models.</param>
         public CombatController(IMediator mediator)
         {
             _mediator = mediator;
@@ -28,7 +38,8 @@ namespace RpgGame.WebApi.Controllers
                 DefenderId = request.DefenderId
             };
 
-            OperationResult<CombatResult> result = await _mediator.Send(command);
+            //var result = await _mediator.Send<OperationResult<CombatResult>>(command);
+            var result = await _mediator.Send(command);
 
             if (!result.Succeeded)
                 return BadRequest(new { message = result.FirstErrorMessage });

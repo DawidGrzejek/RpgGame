@@ -6,5 +6,5 @@ namespace RpgGame.Application.Commands
     public interface ICommand : IRequest { }
 
     // Generic version for commands that return a result
-    public interface ICommand<TResult> : IRequest<TResult>, ICommand { }
+    public interface ICommand<TResult> : IRequest<TResult> { }
 }

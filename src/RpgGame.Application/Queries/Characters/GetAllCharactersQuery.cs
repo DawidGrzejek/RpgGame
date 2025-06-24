@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using RpgGame.Application.Repositories;
+using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
 using System.Collections.Generic;
 using System.Threading;
@@ -7,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace RpgGame.Application.Queries.Characters
 {
-    public class GetAllCharactersQuery : IQuery<QueryResult<IReadOnlyList<Character>>>
+    public class GetAllCharactersQuery : IQuery<OperationResult<IReadOnlyList<Character>>>
     {
         // This query doesn't need any parameters
     }
 
-    public class GetAllCharactersQueryHandler : IRequestHandler<GetAllCharactersQuery, QueryResult<IReadOnlyList<Character>>>
+    public class GetAllCharactersQueryHandler : IRequestHandler<GetAllCharactersQuery, OperationResult<IReadOnlyList<Character>>>
     {
         private readonly ICharacterRepository _characterRepository;
 
@@ -21,16 +22,21 @@ namespace RpgGame.Application.Queries.Characters
             _characterRepository = characterRepository;
         }
 
-        public async Task<QueryResult<IReadOnlyList<Character>>> Handle(GetAllCharactersQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<IReadOnlyList<Character>>> Handle(GetAllCharactersQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var characters = await _characterRepository.GetAllAsync();
-                return QueryResult<IReadOnlyList<Character>>.Ok(characters);
+                var charactersResult = await _characterRepository.GetAllAsync();
+                if (!charactersResult.Succeeded)
+                {
+                    return OperationResult<IReadOnlyList<Character>>.Failure(charactersResult.Errors);
+                }
+
+                return OperationResult<IReadOnlyList<Character>>.Success(charactersResult.Data);
             }
             catch (System.Exception ex)
             {
-                return QueryResult<IReadOnlyList<Character>>.Fail($"Error retrieving characters: {ex.Message}");
+                return OperationResult<IReadOnlyList<Character>>.Failure("GetAllCharactersQueryHandlerException", $"Error retrieving characters: {ex.Message} - {ex.InnerException}");
             }
         }
     }

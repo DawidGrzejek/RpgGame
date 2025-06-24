@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿/*using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using RpgGame.Application.Commands.Game;
 using RpgGame.Domain.Interfaces.World;
@@ -90,7 +90,7 @@ namespace RpgGame.WebApi.Controllers
         [HttpPost("random-encounter")]
         public async Task<ActionResult> TriggerRandomEncounter([FromBody] RandomEncounterRequest request)
         {
-            var command = new TriggerRandomEncounterCommand
+            var command = new RandomEncounterRequest
             {
                 CharacterId = request.CharacterId,
                 LocationName = request.LocationName
@@ -108,7 +108,7 @@ namespace RpgGame.WebApi.Controllers
         [HttpPost("save")]
         public async Task<ActionResult> SaveGame([FromBody] SaveGameRequest request)
         {
-            var command = new SaveGameCommand
+            var command = new SaveGameRequest
             {
                 CharacterId = request.CharacterId,
                 LocationName = request.LocationName,
@@ -130,3 +130,4 @@ namespace RpgGame.WebApi.Controllers
         }
     }
 }
+*/

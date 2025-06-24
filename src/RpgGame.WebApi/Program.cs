@@ -78,10 +78,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
-// Register notification service for events
-builder.Services.AddScoped<IEventHandler<CharacterLeveledUp>, NotificationService>();
-builder.Services.AddScoped<IEventHandler<CharacterDied>, NotificationService>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

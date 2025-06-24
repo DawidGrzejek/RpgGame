@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RpgGame.Application.Events;
@@ -7,6 +9,7 @@ using RpgGame.Infrastructure.EventStore;
 using RpgGame.Infrastructure.Persistence.EFCore;
 using RpgGame.Infrastructure.Persistence.Repositories;
 using RpgGame.Infrastructure.Persistence.UnitOfWork;
+
 
 namespace RpgGame.Infrastructure
 {
@@ -21,45 +24,29 @@ namespace RpgGame.Infrastructure
             IConfiguration configuration)
         {
             // Register DbContext
-            services.AddDbContext<GameDbContext>(options =>
-            {
-                // Get connection string from configuration
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<GameDbContext>();
 
-                // If connection string is provided, use it; otherwise, use default SQLite
-                if (!string.IsNullOrEmpty(connectionString))
-                {
-                    // Check if the connection string indicates SQLite or SQL Server
-                    if (connectionString.ToLower().Contains("data source=") ||
-                        connectionString.ToLower().Contains(".db"))
-                    {
-                        options.UseSqlite(connectionString);
-                    }
-                    else
-                    {
-                        // Assume SQL Server if not SQLite
-                        //options.UseSqlServer(connectionString);
-                    }
-                }
-                else
-                {
-                    // Default to SQLite with default location
-                    options.UseSqlite("Data Source=Data/rpggame.db");
-                }
+            // Add ASP.NET Core Identity services
+            services.AddDbContext<IdentityDbContext>(options =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<IdentityDbContext>()
+                .AddDefaultTokenProviders();
 
             // Register repositories - this is where Infrastructure implementations are connected to Application interfaces
 
-            // 1. Register UnitOfWork
+            // Register UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // 2. Register event store repository - implement Application interface with Infrastructure implementation
+            // Register event store repository - implement Application interface with Infrastructure implementation
             services.AddScoped<IEventStoreRepository, EventStoreRepository>();
 
-            // 3. Register domain repositories - implement Application interfaces with Infrastructure implementations
+            // Register domain repositories - implement Application interfaces with Infrastructure implementations
             services.AddScoped<ICharacterRepository, CharacterRepository>();
             services.AddScoped<IGameSaveRepository, GameSaveRepository>();
-            //services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<IItemRepository, ItemRepository>();
 
             return services;
         }

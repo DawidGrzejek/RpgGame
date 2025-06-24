@@ -1,0 +1,6 @@
+{
+  "port": 5328,
+  "path": "./src/RpgGame.WebApi",
+  "clr": "v4.0",
+  "protocol": "http"
+}

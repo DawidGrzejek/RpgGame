@@ -41,7 +41,7 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
                     existingSave.PlayerCharacter = playerCharacter;
                     existingSave.CurrentLocationName = currentLocationName;
                     existingSave.PlayTime = playTime;
-                    existingSave.SaveDate = DateTime.Now;
+                    existingSave.CreatedAt = DateTime.Now;
                 }
                 else
                 {
@@ -52,7 +52,7 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
                         PlayerCharacter = playerCharacter,
                         CurrentLocationName = currentLocationName,
                         PlayTime = playTime,
-                        SaveDate = DateTime.Now
+                        CreatedAt = DateTime.Now
                     }, cancellationToken);
                 }
 
@@ -102,11 +102,11 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
             try
             {
                 return await _context.GameSaves
-                    .OrderByDescending(g => g.SaveDate)
-                    .Select(g => new { g.SaveName, g.SaveDate })
+                    .OrderByDescending(g => g.CreatedAt)
+                    .Select(g => new { g.SaveName, g.CreatedAt })
                     .AsNoTracking()
                     .ToListAsync(cancellationToken)
-                    .ContinueWith(t => t.Result.Select(r => (r.SaveName, r.SaveDate)).ToList());
+                    .ContinueWith(t => t.Result.Select(r => (r.SaveName, r.CreatedAt)).ToList());
             }
             catch (Exception ex)
             {

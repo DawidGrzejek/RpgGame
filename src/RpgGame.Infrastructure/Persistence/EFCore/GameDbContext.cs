@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RpgGame.Domain.Events.Base;
-using System;
-using System.IO;
+using RpgGame.Infrastructure.Persistence.EFCore.Configurations;
+using Microsoft.Extensions.Configuration;
 
 namespace RpgGame.Infrastructure.Persistence.EFCore
 {
@@ -24,86 +24,51 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Default configuration when options are not provided
-                // Find the solution root directory by navigating up from the current assembly's location
-                string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-                string solutionDir = FindSolutionRootDirectory(currentDir);
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddEnvironmentVariables()
+                    .AddEnvironmentVariables()
+                    .Build();
 
-                // Create a Data directory in the solution root if it doesn't exist
-                string dataDir = Path.Combine(solutionDir, "Data");
-                Directory.CreateDirectory(dataDir);
+                // Get connection string from environment variable or configuration
+                var connectionString = Environment.GetEnvironmentVariable("RPG_GAME_DB_CONNECTION_STRING", EnvironmentVariableTarget.Machine) ??
+                                       configuration.GetConnectionString("DefaultConnection");
 
-                string dbPath = Path.Combine(dataDir, "rpggame.db");
-
-                optionsBuilder.UseSqlite($"Data Source={dbPath}");
-            }
-        }
-
-        private string FindSolutionRootDirectory(string startingPath)
-        {
-            // Start with the bin directory path
-            DirectoryInfo directory = new DirectoryInfo(startingPath);
-
-            // Navigate up until we find the solution directory (where .sln might be)
-            // Or until we reach some reasonable upper bound (like 5 levels)
-            int maxLevels = 5;
-            int level = 0;
-
-            while (directory != null && level < maxLevels)
-            {
-                // Check if this looks like a solution root (has src folder or .sln file)
-                if (Directory.Exists(Path.Combine(directory.FullName, "src")) ||
-                    directory.GetFiles("*.sln").Length > 0)
+                if (string.IsNullOrEmpty(connectionString))
                 {
-                    return directory.FullName;
+                    throw new InvalidOperationException(
+                        "DefaultConnection string is required in configuration. " +
+                        "Please ensure your appsettings.json contains a valid PostgreSQL connection string.");
                 }
 
-                // Move up to the parent directory
-                directory = directory.Parent;
-                level++;
+                optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorCodesToAdd: null);
+                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    npgsqlOptions.CommandTimeout(60);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "RpgGame");
+                })
+                .UseEnumCheckConstraints()
+                .UseSnakeCaseNamingConvention();
+                
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    optionsBuilder.EnableDetailedErrors(); // Enable detailed errors in development
+                    optionsBuilder.EnableSensitiveDataLogging(); // Enable sensitive data logging in development
+                }
             }
-
-            // If we couldn't find a solution root, just return a path relative to where the app is running
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure GameSave entity
-            modelBuilder.Entity<GameSave>()
-                .ToTable("GameSaves") // Explicit table name
-                .HasKey(g => g.Id);
-
-            modelBuilder.Entity<GameSave>()
-                .Property(g => g.SaveName)
-                .IsRequired();
-
-            modelBuilder.Entity<GameSave>()
-                .HasIndex(g => g.SaveName)
-                .IsUnique();
-
-            // Configure JSON serialization for complex objects
-            modelBuilder.Entity<GameSave>()
-                .Property(g => g.PlayerCharacterJson)
-                .HasColumnName("PlayerCharacter");
-
-
-            modelBuilder.Entity<StoredEvent>(entity =>
-            {
-                entity.ToTable("StoredEvents");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.AggregateId).IsRequired();
-                entity.Property(e => e.AggregateType).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.EventType).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.EventData).IsRequired();
-                entity.Property(e => e.Timestamp).IsRequired();
-                entity.Property(e => e.Version).IsRequired();
-
-                // Create indexes for efficient querying
-                entity.HasIndex(e => e.AggregateId);
-                entity.HasIndex(e => e.Timestamp);
-                entity.HasIndex(e => new { e.AggregateId, e.Version }).IsUnique();
-            });
+            modelBuilder.HasDefaultSchema("RpgGame");
+            modelBuilder.ApplyConfiguration(new GameSaveConfiguration());
+            modelBuilder.ApplyConfiguration(new StoredEventConfiguration());
         }
     }
 }

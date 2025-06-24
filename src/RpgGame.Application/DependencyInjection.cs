@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using RpgGame.Application.Behaviors;
+using RpgGame.Application.Commands.Characters;
 using RpgGame.Application.Commands.Combat;
 using RpgGame.Application.Commands.Game;
 using RpgGame.Application.Commands.Results;
@@ -22,10 +23,14 @@ public static class DependencyInjection
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         // Register FluentValidation
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssemblyContaining<PerformAttackCommandValidator>();
 
         // Register GameSaveService as scoped
         services.AddScoped<IGameSaveService, GameSaveService>();
+
+        // Register IQuestService
+        services.AddScoped<IQuestService, QuestService>();
 
         // Register pipeline behaviors
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -39,11 +44,11 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<CharacterLeveledUp>, CharacterLeveledUpHandler>();
         services.AddScoped<IEventHandler<CharacterDied>, CharacterDiedHandler>();
 
-        // In your Application layer DependencyInjection.cs
-        services.AddScoped<IRequestHandler<PerformAttackCommand, OperationResult<CombatResult>>, PerformAttackCommandHandler>();
+        //services.AddScoped<IRequestHandler<PerformAttackCommand, OperationResult<CombatResult>>, PerformAttackCommandHandler>();
         services.AddScoped<IRequestHandler<FleeCombatCommand, OperationResult<FleeResult>>, FleeCombatCommandHandler>();
         services.AddScoped<IRequestHandler<MoveCharacterCommand, OperationResult<LocationChangeResult>>, MoveCharacterCommandHandler>();
         services.AddScoped<IRequestHandler<ExploreLocationCommand, OperationResult<ExploreResult>>, ExploreLocationCommandHandler>();
+        services.AddScoped<IRequestHandler<ProcessCharacterDeathCommand, OperationResult<CharacterDeathResult>>, ProcessCharacterDeathCommandHandler>();
 
         return services;
     }

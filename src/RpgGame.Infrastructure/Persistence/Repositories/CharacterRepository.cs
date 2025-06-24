@@ -1,5 +1,6 @@
 ﻿using RpgGame.Application.Events;
 using RpgGame.Application.Repositories;
+using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Infrastructure.Persistence.EFCore;
 
@@ -16,7 +17,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             _eventStore = eventStore;
         }
 
-        public async Task<Guid> AddAsync(Character character)
+        public async Task<OperationResult<Guid>> AddAsync(Character character)
         {
             // Store events from the character
             var events = character.DomainEvents.ToList();
@@ -26,10 +27,11 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                 character.ClearDomainEvents();
             }
 
-            return character.Id;
+            // Return the ID of the newly created character
+            return OperationResult<Guid>.Success(character.Id);
         }
 
-        public async Task<Character> GetByIdAsync(Guid id)
+        public async Task<OperationResult<Character>> GetByIdAsync(Guid id)
         {
             // Retrieve all events for this character
             var events = await _eventStore.GetEventsAsync(id);
@@ -41,7 +43,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             return Character.FromEvents(id, events);
         }
 
-        public async Task<IReadOnlyList<Character>> GetAllAsync()
+        public async Task<OperationResult<IReadOnlyList<Character>>> GetAllAsync()
         {
             // This is more complex in an event-sourced system
             // We need to query for unique aggregate IDs from the event store
@@ -68,7 +70,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             return characters;
         }
 
-        public async Task UpdateAsync(Character character)
+        public async Task<OperationResult> UpdateAsync(Character character)
         {
             // In event sourcing, just save the new events
             var events = character.DomainEvents.ToList();
@@ -77,9 +79,10 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                 await _eventStore.SaveEventsAsync(events);
                 character.ClearDomainEvents();
             }
+            return OperationResult.Success();
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<OperationResult> DeleteAsync(Guid id)
         {
             // In a true event-sourced system, we don't delete events
             // Instead, we'd add a "CharacterDeletedEvent"

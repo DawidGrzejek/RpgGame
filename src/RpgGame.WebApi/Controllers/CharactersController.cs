@@ -57,8 +57,8 @@ namespace RpgGame.WebApi.Controllers
             var query = new GetAllCharactersQuery();
             var result = await _mediator.Send(query);
 
-            if (!result.Success)
-                return BadRequest(result.Message);
+            if (!result.Succeeded)
+                return BadRequest(result.FirstErrorMessage);
 
             return Ok(_mapper.Map<IEnumerable<CharacterSummaryDto>>(result.Data));
         }

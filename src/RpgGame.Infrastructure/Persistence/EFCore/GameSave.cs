@@ -18,7 +18,8 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
     {
         public int Id { get; set; }
         public string SaveName { get; set; }
-        public DateTime SaveDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public string PlayerCharacterJson { get; set; }
         public string CurrentLocationName { get; set; }
         public int PlayTime { get; set; }
