@@ -21,6 +21,15 @@
         "isBackground": true
     },
     {
+      "label": "build",
+      "command": "dotnet build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/src/RpgGame.WebApi"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
         "label": "Run All",
         "dependsOn": [
             "Run Web API",

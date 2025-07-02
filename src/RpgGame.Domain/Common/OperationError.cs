@@ -19,19 +19,41 @@ namespace RpgGame.Domain.Common
         /// Gets the error code that uniquely identifies the type of error.
         /// </summary>
         public string Code { get; }
+
         /// <summary>
         /// Gets the human-readable description of the error.
         /// </summary>
         public string Description { get; }
+
+        /// <summary>
+        /// Gets the inner exception message, if applicable.
+        /// </summary>
+        /// <remarks>This property can be used to provide additional context about the error, such as
+        public string? InnerException { get; }
+
         /// <summary>
         /// Gets the name of the property associated with the error, if applicable.
         /// </summary>
         public string? PropertyName { get; }
 
-        public OperationError(string code, string description, string? propertyName = null)
+        public OperationError(string code, string description)
         {
             Code = code ?? throw new ArgumentNullException(nameof(code));
             Description = description ?? throw new ArgumentNullException(nameof(description));
+        }
+
+        public OperationError(string code, string description, string innerException)
+        {
+            Code = code ?? throw new ArgumentNullException(nameof(code));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            InnerException = innerException ?? throw new ArgumentNullException(nameof(innerException));
+        }
+
+        public OperationError(string code, string description, string? innerException = null, string? propertyName = null)
+        {
+            Code = code ?? throw new ArgumentNullException(nameof(code));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            InnerException = innerException;
             PropertyName = propertyName;
         }
 

@@ -97,24 +97,24 @@ namespace RpgGame.WebApi.Controllers
 
     public class SaveFileDto
     {
-        public string SaveName { get; set; }
+        public string? SaveName { get; set; }
         public DateTime SaveDate { get; set; }
-        public string SavedAt { get; set; }
+        public string? SavedAt { get; set; }
     }
 
     public class SaveDetailsDto
     {
-        public string SaveName { get; set; }
+        public string? SaveName { get; set; }
         public DateTime SaveDate { get; set; }
-        public string SavedAt { get; set; }
-        public string CharacterName { get; set; }
+        public string? SavedAt { get; set; }
+        public string? CharacterName { get; set; }
         public int CharacterLevel { get; set; }
-        public string LocationName { get; set; }
-        public string PlayTime { get; set; }
+        public string? LocationName { get; set; }
+        public string? PlayTime { get; set; }
     }
 
     public class SaveGameRequest
     {
-        public string SaveName { get; set; }
+        public string? SaveName { get; set; }
     }
 }

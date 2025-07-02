@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RpgGame.Application.Events;
 using RpgGame.Application.Repositories;
+using RpgGame.Domain.Interfaces.Repositories;
 using RpgGame.Infrastructure.EventStore;
 using RpgGame.Infrastructure.Persistence.EFCore;
 using RpgGame.Infrastructure.Persistence.Repositories;
@@ -47,6 +48,8 @@ namespace RpgGame.Infrastructure
             services.AddScoped<ICharacterRepository, CharacterRepository>();
             services.AddScoped<IGameSaveRepository, GameSaveRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<IEnemyTemplateRepository, EnemyTemplateRepository>();
+            services.AddScoped<IItemTemplateRepository, ItemTemplateRepository>();
 
             return services;
         }

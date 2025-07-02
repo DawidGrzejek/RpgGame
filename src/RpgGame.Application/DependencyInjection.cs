@@ -31,6 +31,7 @@ public static class DependencyInjection
 
         // Register IQuestService
         services.AddScoped<IQuestService, QuestService>();
+        services.AddScoped<ICharacterService, CharacterService>();
 
         // Register pipeline behaviors
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

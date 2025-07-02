@@ -1,73 +1,59 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using RpgGame.Domain.Entities.Configuration;
 using RpgGame.Domain.Interfaces.Characters;
-using RpgGame.Domain.Interfaces.Items;
 
-namespace RpgGame.Domain.Entities.Characters.Base
+namespace RpgGame.Domain.Entities.Characters.NPC.Enemy
 {
-    /// <summary>
-    /// Base class for all enemy characters
-    /// </summary>
-    public abstract class Enemy : NonPlayerCharacter
+    public class Enemy : EnemyBase
     {
-        // Additional fields for enemies
-        protected int _experienceReward;
-        protected List<IItem> _lootTable;
-
-        // Properties
-        public int ExperienceReward => _experienceReward;
-        public IReadOnlyList<IItem> LootTable => _lootTable.AsReadOnly();
-
-        /// <summary>
-        /// Constructor for enemy characters
-        /// </summary>
-        protected Enemy(
-            string name,
-            int health,
-            int strength,
-            int defense,
-            int experienceReward)
-            : base(name, health, strength, defense, false, $"{name} growls menacingly!")
+        public EnemyTemplate Template { get; private set; }
+        
+        public Enemy(EnemyTemplate template)
+            : base(template.Name, template.BaseHealth, template.BaseStrength, 
+                    template.BaseDefense, template.ExperienceReward)
         {
-            if (experienceReward < 0)
-                throw new ArgumentException("Experience reward cannot be negative", nameof(experienceReward));
-
-            _experienceReward = experienceReward;
-            _lootTable = new List<IItem>();
+            Template = template ?? throw new ArgumentNullException(nameof(template));
+            ApplyTemplate();
+        }
+        private void ApplyTemplate()
+        {
+            // Apply special abilities from template
+            foreach (var ability in Template.SpecialAbilities)
+            {
+                ApplySpecialAbility(ability.Key, ability.Value);
+            }
         }
 
-        /// <summary>
-        /// Drops a random item from the loot table
-        /// </summary>
-        public IItem DropLoot()
+        private void ApplySpecialAbility(string abilityName, object abilityData)
         {
-            if (_lootTable.Count == 0)
-                return null;
-
-            Random rnd = new Random();
-            IItem droppedItem = _lootTable[rnd.Next(_lootTable.Count)];
-
-            Console.WriteLine($"{Name} dropped {droppedItem.Name}!");
-            return droppedItem;
+            // Implement special ability application logic
+            switch (abilityName)
+            {
+                case "FireBreath":
+                    // Add fire breath capability
+                    break;
+                case "Regeneration":
+                    // Add regeneration capability
+                    break;
+                // Add more abilities as needed
+            }
         }
 
-        /// <summary>
-        /// Overrides the interaction behavior to initiate combat
-        /// </summary>
-        public override void Interact(IPlayerCharacter player)
+        public void UseSpecialAbility(ICharacter target)
         {
-            // Enemies attack when interacted with
-            Console.WriteLine($"{Name} attacks you!");
-            Attack(player);
+            // Use abilities based on template configuration
+            foreach (var ability in Template.SpecialAbilities)
+            {
+                ExecuteSpecialAbility(ability.Key, ability.Value, target);
+            }
         }
 
-        /// <summary>
-        /// Called when the enemy is defeated
-        /// </summary>
-        protected override void OnDeath()
+        private void ExecuteSpecialAbility(string abilityName, object abilityData, ICharacter target)
         {
-            base.OnDeath();
-            // The experience reward is handled by the combat system
+            // Implement ability execution logic
         }
     }
 }

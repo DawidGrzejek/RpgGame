@@ -5,6 +5,7 @@ using RpgGame.Application.Interfaces.Services;
 using RpgGame.Application.Repositories;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
+using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using RpgGame.Domain.Enums;
 using RpgGame.Domain.Interfaces.Items;
 using RpgGame.Domain.Interfaces.World;

@@ -1,0 +1,241 @@
+.entity-creation-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.creation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+
+  h1 {
+    margin: 0;
+    color: #333;
+  }
+}
+
+.entity-form {
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+
+    h2 {
+      margin: 0 0 1rem 0;
+      color: #495057;
+      font-size: 1.3rem;
+    }
+
+    .section-description {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+      &:focus {
+        outline: 0;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+      }
+    }
+
+    .error {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .checkbox-group {
+    .checkbox-label {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+      cursor: pointer;
+
+      input[type="checkbox"] {
+        margin-right: 0.5rem;
+      }
+
+      span {
+        font-weight: 600;
+        color: #333;
+      }
+
+      small {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-left: 1.5rem;
+      }
+    }
+  }
+
+  .loot-list, .abilities-list, .stat-modifiers {
+    margin-bottom: 1rem;
+  }
+
+  .loot-item, .ability-item, .modifier-item {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: flex-start;
+
+    .form-control {
+      flex: 1;
+    }
+
+    .modifier-stat {
+      flex: 2;
+    }
+
+    .modifier-value {
+      flex: 1;
+    }
+  }
+
+  .ability-item {
+    flex-direction: column;
+    background: white;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+
+    .ability-header {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+
+      .ability-name {
+        flex: 1;
+      }
+    }
+
+    .ability-config {
+      .form-control {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .error-message {
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-top: 1rem;
+  }
+}
+
+// Shared button styles
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+
+    &:hover:not(:disabled) {
+      background-color: #0056b3;
+      border-color: #004085;
+    }
+  }
+
+  &.btn-outline {
+    color: #007bff;
+    background-color: transparent;
+    border-color: #007bff;
+
+    &:hover:not(:disabled) {
+      color: #fff;
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+  }
+
+  &.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+
+    &:hover:not(:disabled) {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+  }
+
+  &.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+  }
+
+  &.btn-link {
+    color: #007bff;
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+  }
+}

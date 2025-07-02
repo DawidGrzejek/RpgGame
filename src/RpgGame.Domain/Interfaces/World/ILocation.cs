@@ -1,4 +1,5 @@
 ﻿using RpgGame.Domain.Entities.Characters.Base;
+using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using System;
 using System.Collections.Generic;
 using System.Linq;

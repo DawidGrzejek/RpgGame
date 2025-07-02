@@ -5,6 +5,7 @@ using RpgGame.Application.Commands.Results;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
+using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

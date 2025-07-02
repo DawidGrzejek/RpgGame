@@ -8,97 +8,145 @@ using RpgGame.Infrastructure; // For infrastructure layer DI extension
 using RpgGame.WebApi.Filters;
 using RpgGame.WebApi.Hubs;
 using RpgGame.WebApi.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Web;
 
-var builder = WebApplication.CreateBuilder(args);
+NLog.LogManager.Setup().LoadConfigurationFromAppSettings();
+var logger = NLog.LogManager.GetCurrentClassLogger();
 
-// Add services to the container.
-
-builder.Services.AddControllers(options =>
+try
 {
-    options.Filters.Add<ApiExceptionFilter>();
-})
-.AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-// Register layers in the correct order (inner to outer)
+    // Remove default logging providers
+    builder.Logging.ClearProviders();
+    // Add NLog as the logging provider
+    builder.Host.UseNLog();
+    
+    logger.Info("Application starting up");
 
-// 1. Domain layer (doesn't depend on other layers)
-builder.Services.AddDomainServices();
+    // Add services to the container.
 
-// 2. Application layer (depends on Domain)
-builder.Services.AddApplicationServices();
-
-// 3. Infrastructure layer (implements Application interfaces)
-builder.Services.AddInfrastructureServices(builder.Configuration);
-
-// Add AutoMapper
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    builder.Services.AddControllers(options =>
     {
-        Title = "RPG Game API",
-        Version = "v1",
-        Description = "API for RPG Game"
-    });
-    c.CustomSchemaIds(type => type.FullName);
-});
-
-// Add to Program.cs
-builder.Services.AddApiVersioning(options =>
-{
-    options.ReportApiVersions = true;
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.DefaultApiVersion = new ApiVersion(1, 0);
-});
-
-builder.Services.AddApiVersioning()
-.AddApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
-});
-
-// Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngular", policy =>
+        options.Filters.Add<ApiExceptionFilter>();
+    })
+    .AddJsonOptions(options =>
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
-});
 
-builder.Services.AddSignalR();
+    // Register layers in the correct order (inner to outer)
 
-var app = builder.Build();
+    // 1. Domain layer (doesn't depend on other layers)
+    builder.Services.AddDomainServices();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
+    // 2. Application layer (depends on Domain)
+    builder.Services.AddApplicationServices();
+
+    // 3. Infrastructure layer (implements Application interfaces)
+    builder.Services.AddInfrastructureServices(builder.Configuration);
+
+    // Add AutoMapper
+    builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+        {
+            Title = "RPG Game API",
+            Version = "v1",
+            Description = "API for RPG Game"
+        });
+        c.CustomSchemaIds(type => type.FullName);
+    });
+
+    // Add to Program.cs
+    builder.Services.AddApiVersioning(options =>
+    {
+        options.ReportApiVersions = true;
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.DefaultApiVersion = new ApiVersion(1, 0);
+    });
+
+    builder.Services.AddApiVersioning()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
+
+    // Add CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAngular", policy =>
+        {
+            policy.WithOrigins("http://localhost:4200")
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+    });
+
+    builder.Services.AddSignalR();
+    
+    // ...existing code...
+
+    var app = builder.Build();
+    
+    // Check DI registrations for ICharacterService and CharacterService
+    using (var scope = app.Services.CreateScope())
+    {
+        var provider = scope.ServiceProvider;
+    
+        var characterService = provider.GetService<RpgGame.Application.Interfaces.Services.ICharacterService>();
+        if (characterService != null)
+            logger.Info("ICharacterService resolved successfully at runtime.");
+        else
+            logger.Error("ICharacterService could NOT be resolved at runtime!");
+    
+        var concreteCharacterService = provider.GetService<RpgGame.Application.Services.CharacterService>();
+        if (concreteCharacterService != null)
+            logger.Info("CharacterService (concrete) resolved successfully at runtime.");
+        else
+            logger.Warn("CharacterService (concrete) could NOT be resolved at runtime (expected if only registered by interface).");
+    }
+    
+    // ...existing code...
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        app.UseDeveloperExceptionPage();
+    }
+    else
+    {
+        app.UseExceptionHandler("/error");
+        app.UseHsts();
+    }
+
+    app.MapHub<GameHub>("/gameHub");
+
+    app.UseHttpsRedirection();
+    app.UseRouting();
+    app.UseCors("AllowAngular");
+    app.UseAuthorization();
+    app.MapControllers();
+
+    app.Run();
 }
-else
+catch (Exception ex)
 {
-    app.UseExceptionHandler("/error");
-    app.UseHsts();
+    // NLog: catch setup errors
+    logger.Error(ex, "Application start-up failed");
+    throw;
 }
-
-app.MapHub<GameHub>("/gameHub");
-
-app.UseHttpsRedirection();
-app.UseRouting();
-app.UseCors("AllowAngular");
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
+finally
+{
+    NLog.LogManager.Shutdown();
+}

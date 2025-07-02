@@ -5,12 +5,10 @@
     /// </summary>
     public enum EnemyType
     {
-        Goblin,
-        Skeleton,
+        Beast,
+        Undead,
+        Humanoid,
         Dragon,
-        Orc,
-        Troll,
-        Wolf,
-        Spider
+        Boss
     }
 }

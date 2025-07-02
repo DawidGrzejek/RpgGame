@@ -1,570 +1,1123 @@
-# RPG Game Domain  
+# RPG Game Project - Clean Architecture Implementation
 
-This project defines the core domain logic for an RPG game, including characters, items, quests, and game mechanics. It is built using C# 12.0 and targets .NET 8. The architecture is modular and extensible, leveraging interfaces, abstract classes, and enums to represent various game elements.  
+A sophisticated text-based role-playing game demonstrating modern software engineering principles, Domain-Driven Design (DDD), Event Sourcing, and Clean Architecture patterns.
 
----  
+## 🎯 Project Overview
 
-## **Project Structure**  
+This project implements a comprehensive RPG game system with multiple interfaces (Console, Web API, and Angular UI) built using .NET 8 and modern architectural patterns. The game features character creation, combat systems, inventory management, quest systems, and persistent game state through event sourcing.
 
-The project is organized into the following key components:  
+### Key Features
 
-### **1. Interfaces**  
-Interfaces define the contracts for various entities in the game, ensuring consistent behavior across implementations.  
+- **Character System**: Three character classes (Warrior, Mage, Rogue) with unique abilities
+- **Combat Mechanics**: Turn-based combat with special abilities and critical hits
+- **Inventory Management**: Equipment system with different item types and slots
+- **Quest System**: Completable quests with rewards and progression tracking
+- **World Exploration**: Connected locations with random encounters
+- **Save/Load System**: Persistent game state with autosave functionality
+- **Event-Driven Architecture**: Real-time notifications and event sourcing
+- **Multiple UIs**: Console application, REST API, and modern Angular frontend
 
-#### **Characters**  
-- **`ICharacter`**: Base interface for all characters.  
- - Properties: `Name`, `Health`, `MaxHealth`, `Level`, `IsAlive`.  
- - Methods: `Attack`, `TakeDamage`, `Heal`, `LevelUp`.  
+---
 
-- **`INonPlayerCharacter`**: Extends `ICharacter` for NPC-specific behavior.  
- - Properties: `IsFriendly`, `Dialogue`.  
- - Methods: `Interact`.  
+## 🏗️ Architecture Overview
 
-- **`IPlayerCharacter`**: Extends `ICharacter` for player-specific behavior.  
- - Properties: `Experience`, `ExperienceToNextLevel`, `Inventory`.  
- - Methods: `GainExperience`, `EquipItem`, `UseItem`, `UseSpecialAbility`.  
-
-#### **Items**  
-- **`IItem`**: Base interface for all items.  
- - Properties: `Name`, `Description`, `Value`, `Type`.  
-
-- **`IEquipment`**: Extends `IItem` for equippable items.  
- - Properties: `Slot`, `BonusValue`.  
- - Methods: `OnEquip`, `OnUnequip`.  
-
-- **`IConsumable`**: Extends `IItem` for consumable items.  
- - Methods: `Consume`.  
-
-#### **Inventory**  
-- **`IInventory`**: Manages a character's inventory.  
- - Properties: `Items`, `Capacity`, `Gold`.  
- - Methods: `AddItem`, `RemoveItem`, `AddGold`, `SpendGold`.  
-
-#### **Quests**  
-- **`IQuest`**: Represents a quest in the game.  
- - Properties: `Name`, `Description`, `IsCompleted`.  
- - Methods: `Complete`.  
-
----  
-
-### **2. Enums**  
-Enums categorize various game elements for better readability and maintainability.  
-
-- **`CharacterType`**: Defines types of characters (e.g., Warrior, Mage).  
-- **`DamageType`**: Defines types of damage (e.g., Physical, Magical).  
-- **`EnemyType`**: Defines types of enemies (e.g., Goblin, Dragon).  
-- **`EquipmentSlot`**: Defines equipment slots (e.g., Head, Chest).  
-- **`ItemType`**: Defines types of items (e.g., Weapon, Potion).  
-- **`LocationType`**: Defines types of locations (e.g., Town, Dungeon).  
-
----  
-
-### **3. Entities**  
-Entities provide concrete implementations of the interfaces and define the behavior of game elements.  
-
-#### **Characters**  
-- **`Character`**: Abstract base class implementing `ICharacter`.  
- - Handles common character logic like attacking, taking damage, healing, and leveling up.  
- - Includes protected methods for customization (e.g., `OnBeforeAttack`, `OnDeath`).  
-
-- **`NonPlayerCharacter`**: Abstract class extending `Character` for NPCs.  
- - Adds properties like `IsFriendly` and `Dialogue`.  
- - Defines interaction behavior with players.  
-
-- **`PlayerCharacter`**: Concrete class for player-controlled characters.  
- - Implements inventory and experience management.  
-
-- **`Enemy`**: Abstract class extending `NonPlayerCharacter` for enemies.  
- - Adds properties like `ExperienceReward` and `LootTable`.  
- - Includes methods for dropping loot and initiating combat.  
-
-#### **Items**  
-- **`Item`**: Base class implementing `IItem`.  
- - Provides shared logic for all items, such as name, description, and value.  
-
-- **`Equipment`**: Implements `IEquipment`.  
- - Adds logic for equipping and unequipping items, with bonuses applied to characters.  
-
-- **`Consumable`**: Implements `IConsumable`.  
- - Adds logic for consuming items, such as healing potions or buffs.  
-
-#### **Inventory**  
-- **`Inventory`**: Implements `IInventory`.  
- - Manages a collection of items, enforces capacity limits, and tracks gold.  
-
-#### **Quests**  
-- **`Quest`**: Implements `IQuest`.  
- - Tracks quest progress and completion status.  
-
----  
-
-## **Design Patterns**  
-
-### **1. Factory Pattern**  
-The factory pattern is used to create instances of characters, items, and quests. This ensures that the creation logic is centralized and consistent.  
-
-Example:  
-- A `CharacterFactory` creates instances of `PlayerCharacter` or `Enemy` based on the input parameters.  
-- An `ItemFactory` creates instances of `Equipment` or `Consumable` based on the item type.  
-
-# RPG Game Domain  
-
-This project defines the core domain logic for an RPG game, including characters, items, quests, and game mechanics. It is built using C# 12.0 and targets .NET 8. The architecture is modular and extensible, leveraging interfaces, abstract classes, and enums to represent various game elements.  
-
----  
-
-## **How the Application Works**  
-
-The RPG Game Domain is designed to simulate the core mechanics of an RPG game. It includes:  
-- **Characters**: Player-controlled characters (e.g., Warrior, Mage, Rogue) and non-player characters (e.g., Skeleton enemies).  
-- **Items**: Equipment (e.g., weapons, armor) and consumables (e.g., potions).  
-- **Quests**: Tasks that players can complete for rewards.  
-- **Combat System**: Characters can attack, take damage, heal, and level up.  
-- **Inventory Management**: Players can manage items and gold.  
-
-The application uses a modular design to ensure that new features, such as additional character types or items, can be added with minimal changes to the existing codebase.  
-
----  
-
-## **Project Structure**  
-
-The project is organized into the following key components:  
-
-### **1. Interfaces**  
-Interfaces define the contracts for various entities in the game, ensuring consistent behavior across implementations.  
-
-#### **Characters**  
-- **`ICharacter`**: Base interface for all characters.  
- - Properties: `Name`, `Health`, `MaxHealth`, `Level`, `IsAlive`.  
- - Methods: `Attack`, `TakeDamage`, `Heal`, `LevelUp`.  
-
-- **`INonPlayerCharacter`**: Extends `ICharacter` for NPC-specific behavior.  
- - Properties: `IsFriendly`, `Dialogue`.  
- - Methods: `Interact`.  
-
-- **`IPlayerCharacter`**: Extends `ICharacter` for player-specific behavior.  
- - Properties: `Experience`, `ExperienceToNextLevel`, `Inventory`.  
- - Methods: `GainExperience`, `EquipItem`, `UseItem`, `UseSpecialAbility`.  
-
-#### **Items**  
-- **`IItem`**: Base interface for all items.  
- - Properties: `Name`, `Description`, `Value`, `Type`.  
-
-- **`IEquipment`**: Extends `IItem` for equippable items.  
- - Properties: `Slot`, `BonusValue`.  
- - Methods: `OnEquip`, `OnUnequip`.  
-
-- **`IConsumable`**: Extends `IItem` for consumable items.  
- - Methods: `Consume`.  
-
-#### **Inventory**  
-- **`IInventory`**: Manages a character's inventory.  
- - Properties: `Items`, `Capacity`, `Gold`.  
- - Methods: `AddItem`, `RemoveItem`, `AddGold`, `SpendGold`.  
-
-#### **Quests**  
-- **`IQuest`**: Represents a quest in the game.  
- - Properties: `Name`, `Description`, `IsCompleted`.  
- - Methods: `Complete`.  
-
----  
-
-### **2. Enums**  
-Enums categorize various game elements for better readability and maintainability.  
-
-- **`CharacterType`**: Defines types of characters (e.g., Warrior, Mage).  
-- **`DamageType`**: Defines types of damage (e.g., Physical, Magical).  
-- **`EnemyType`**: Defines types of enemies (e.g., Goblin, Dragon).  
-- **`EquipmentSlot`**: Defines equipment slots (e.g., Head, Chest).  
-- **`ItemType`**: Defines types of items (e.g., Weapon, Potion).  
-- **`LocationType`**: Defines types of locations (e.g., Town, Dungeon).  
-
----  
-
-### **3. Entities**  
-Entities provide concrete implementations of the interfaces and define the behavior of game elements.  
-
-#### **Characters**  
-- **`Character`**: Abstract base class implementing `ICharacter`.  
- - Handles common character logic like attacking, taking damage, healing, and leveling up.  
- - Includes protected methods for customization (e.g., `OnBeforeAttack`, `OnDeath`).  
-
-- **`PlayerCharacter`**: Concrete class for player-controlled characters.  
- - Implements inventory and experience management.  
- - Subclasses:  
-   - **`Warrior`**: A melee-focused character with high defense.  
-   - **`Mage`**: A magic-focused character with mana management.  
-   - **`Rogue`**: A stealth-focused character with critical hit mechanics.  
-
-- **`NonPlayerCharacter`**: Abstract class extending `Character` for NPCs.  
- - Adds properties like `IsFriendly` and `Dialogue`.  
- - Defines interaction behavior with players.  
-
-- **`Enemy`**: Abstract class extending `NonPlayerCharacter` for enemies.  
- - Adds properties like `ExperienceReward` and `LootTable`.  
- - Includes methods for dropping loot and initiating combat.  
- - Subclasses:  
-   - **`Skeleton`**: A basic enemy type.  
-
-#### **Items**  
-- **`Item`**: Base class implementing `IItem`.  
- - Provides shared logic for all items, such as name, description, and value.  
-
-- **`Equipment`**: Implements `IEquipment`.  
- - Adds logic for equipping and unequipping items, with bonuses applied to characters.  
-
-- **`Consumable`**: Implements `IConsumable`.  
- - Adds logic for consuming items, such as healing potions or buffs.  
-
-#### **Inventory**  
-- **`Inventory`**: Implements `IInventory`.  
- - Manages a collection of items, enforces capacity limits, and tracks gold.  
-
-#### **Quests**  
-- **`Quest`**: Implements `IQuest`.  
- - Tracks quest progress and completion status.  
-
----  
-
-## **Design Patterns**  
-
-### **1. Factory Pattern**  
-The factory pattern is used to create instances of characters, items, and quests. This ensures that the creation logic is centralized and consistent.  
-
-Example:  
-- A `CharacterFactory` creates instances of `PlayerCharacter` or `Enemy` based on the input parameters.  
-- An `ItemFactory` creates instances of `Equipment` or `Consumable` based on the item type.  
-
-### **2. Inheritance and Polymorphism**  
-The project heavily relies on inheritance and polymorphism to enable extensibility and code reuse.  
-- The `Character` class serves as a base for all character types, with shared logic for health, leveling, and combat.  
-- The `NonPlayerCharacter` and `PlayerCharacter` classes extend `Character` to add specific behavior.  
-
-### **3. Dependency Injection**  
-Dependency injection is used to decouple components and improve testability. For example, the `Inventory` class can be injected into a `PlayerCharacter` to manage their items.  
-
-### **4. Observer Pattern**  
-The observer pattern is used for event-driven mechanics, such as notifying the game engine when a quest is completed or when a character levels up.  
-
----  
-
-## **UML Diagrams**  
-
-### **1. Character Inheritance Diagram**
-
-### **3. Dependency Injection**  
-Dependency injection is used to decouple components and improve testability. For example, the `Inventory` class can be injected into a `PlayerCharacter` to manage their items.  
-
-### **4. Observer Pattern**  
-The observer pattern is used for event-driven mechanics, such as notifying the game engine when a quest is completed or when a character levels up.  
-
----  
-
-## **UML Diagrams**  
-
-### **1. Character Inheritance Diagram**
----  
-
----  
-
-## **Key Features**  
-- **Modular Design**: Interfaces and abstract classes allow for easy extension and customization.  
-- **Encapsulation**: Fields are protected, with controlled access through properties.  
-- **Polymorphism**: Enables treating different character types uniformly via the `ICharacter` interface.  
-- **Extensibility**: New character types, items, or quests can be added with minimal changes to existing code.  
-
----  
-
-## **Getting Started**  
-1. Clone the repository.  
-2. Open the solution in Visual Studio 2022.  
-3. Build the project to ensure all dependencies are resolved.  
-4. Explore the `Entities`, `Interfaces`, and `Enums` folders to understand the domain logic.  
-
----  
-
-## **Future Enhancements**  
-- Add more character types (e.g., BossEnemy, Merchant).  
-- Implement advanced combat mechanics (e.g., special abilities, status effects).  
-- Expand the quest system with branching storylines.  
-- Introduce multiplayer support.  
-
----  
-
-## **Contributing**  
-Contributions are welcome! Please follow these steps:  
-1. Fork the repository.  
-2. Create a feature branch.  
-3. Commit your changes with clear messages.  
-4. Submit a pull request for review.  
-
----  
-
-## **License**  
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## **Getting Started**  
-1. Clone the repository.  
-2. Open the solution in Visual Studio 2022.  
-3. Build the project to ensure all dependencies are resolved.  
-4. Explore the `Entities`, `Interfaces`, and `Enums` folders to understand the domain logic.  
-
----  
-
-## **Future Enhancements**  
-- Add more character types (e.g., BossEnemy, Merchant).  
-- Implement advanced combat mechanics (e.g., special abilities, status effects).  
-- Expand the quest system with branching storylines.  
-- Introduce multiplayer support.  
-
----  
-
-## **Contributing**  
-Contributions are welcome! Please follow these steps:  
-1. Fork the repository.  
-2. Create a feature branch.  
-3. Commit your changes with clear messages.  
-4. Submit a pull request for review.  
-
-
+The project follows **Clean Architecture** principles with clear separation of concerns across multiple layers:
 
 ```mermaid
-
-graph TD
-
-    subgraph "Domain Layer"
-        D[Domain Entities]
-        DI[Domain Interfaces]
+graph TB
+    subgraph "Presentation Layer"
+        A[Console UI<br/>RpgGame.Presentation]
+        B[Web API<br/>RpgGame.WebApi]
+        C[Angular UI<br/>RpgGame.AngularUI]
     end
-
+    
     subgraph "Application Layer"
-        I[Application Interfaces]
-        S[Application Services]
-        I --defines--> IGameSaveService
-        I --defines--> IGameSaveRepository
-        I --defines--> IEventStoreRepository
-        S --implements--> IGameSaveService
-        S --depends on--> IGameSaveRepository
-        S --depends on--> IEventStoreRepository
-        S --depends on--> D
+        D[Application Services<br/>RpgGame.Application]
+        E[Commands & Queries<br/>CQRS Pattern]
+        F[Event Handlers<br/>Domain Event Processing]
     end
-
+    
+    subgraph "Domain Layer"
+        G[Domain Entities<br/>Character, Item, Quest]
+        H[Domain Events<br/>Business Events]
+        I[Domain Services<br/>Business Logic]
+    end
+    
     subgraph "Infrastructure Layer"
-        DB[Database]
-        RI[Repository Implementations]
-        RI --implements--> IGameSaveRepository
-        RI --implements--> IEventStoreRepository
-        RI --uses--> DB
+        J[Data Persistence<br/>Entity Framework]
+        K[Event Store<br/>Event Sourcing]
+        L[External Services<br/>File System, etc.]
     end
     
-    subgraph "Presentation/API Layer"
-        P[Presentation UI]
-        C[Controllers]
-        P --uses--> IGameSaveService
-        C --uses--> IGameSaveService
-    end
-
-    %% Dependencies point inward
-    D ----> DI
-    P -.depends on.-> S
-    P -.depends on.-> I
-    C -.depends on.-> S
-    C -.depends on.-> I
-    S -.depends on.-> D
-    S -.depends on.-> DI
-    RI -.depends on.-> I
-    RI -.depends on.-> D
+    A --> D
+    B --> D
+    C --> B
+    D --> G
+    D --> K
+    E --> G
+    F --> H
+    J --> G
+    K --> H
+    L --> D
     
-    %% Critical: Dependency Inversion
-    IGameSaveRepository -.defined by.-> I
-    IGameSaveRepository -.implemented by.-> RI
-    IEventStoreRepository -.defined by.-> I
-    IEventStoreRepository -.implemented by.-> RI
-    IGameSaveService -.defined by.-> I
-    IGameSaveService -.implemented by.-> S
-    
-    %% Composition Root
-    CR[Composition Root]
-    CR --registers--> RI
-    CR --registers--> S
-    CR --registers--> D
-
+    style G fill:#e1f5fe
+    style D fill:#fff3e0
+    style A fill:#f3e5f5
+    style J fill:#e8f5e8
 ```
 
+### Layer Responsibilities
 
----  
+#### 🎨 Presentation Layer
 
-## **License**  
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+- **Console UI**: Text-based interface for direct game interaction
+- **Web API**: RESTful endpoints for external client integration
+- **Angular UI**: Modern SPA with rich user experience
 
-### **2. Item Dependency Diagram**
+#### 🔄 Application Layer
+
+- **Commands**: Write operations that modify system state
+- **Queries**: Read operations that retrieve data
+- **Event Handlers**: Process domain events for cross-cutting concerns
+- **Services**: Orchestrate complex business workflows
+
+#### 🎯 Domain Layer
+
+- **Entities**: Core business objects with identity and behavior
+- **Value Objects**: Immutable objects representing concepts
+- **Domain Events**: Represent significant business occurrences
+- **Aggregates**: Consistency boundaries for business operations
+
+#### 🗄️ Infrastructure Layer
+
+- **Repositories**: Data access abstraction
+- **Event Store**: Persistent event storage
+- **External Services**: File system, networking, etc.
+
+---
+
+## 📐 Domain Model
+
+### Core Entities and Relationships
 
 ```mermaid
 classDiagram
-    class ICharacter {
-        +string Name
-        +int Health
-        +int MaxHealth
-        +int Level
-        +bool IsAlive
-        +Attack()
-        +TakeDamage()
-        +Heal()
-        +LevelUp()
-    }
 
-    class Character {
-        -string Name
-        -int Health
-        -int MaxHealth
-        -int Level
-        -bool IsAlive
-        +Attack()
-        +TakeDamage()
-        +Heal()
-        +LevelUp()
-    }
+    IHasDomainEvents <|-- DomainEntity
 
-    class PlayerCharacter {
-        +int Experience
-        +IInventory Inventory
-        +GainExperience()
-        +EquipItem()
-        +UseItem()
-        +UseSpecialAbility()
-    }
+    DomainEntity <|-- Character
 
-    class NonPlayerCharacter {
-        +bool IsFriendly
-        +string Dialogue
-        +Interact()
-    }
+    ICharacter <|-- Character
 
-    class Enemy {
-        +int ExperienceReward
-        +LootTable LootTable
-        +DropLoot()
-        +InitiateCombat()
-    }
+    ICharacter <|-- INonPlayerCharacter
 
-    class Warrior {
-        +Create()
-    }
+    ICharacter <|-- IPlayerCharacter
 
-    class Mage {
-        +int Mana
-        +int MaxMana
-        +Create()
-    }
+    Character <|-- NonPlayerCharacter
 
-    class Rogue {
-        +float CriticalChance
-        +Create()
-    }
+    Character <|-- PlayerCharacter
 
-    class IItem {
-        <<interface>>
-        +string Name
-        +string Description
-        +int Value
-        +ItemType Type
-    }
+    INonPlayerCharacter <|-- NonPlayerCharacter
 
-    class IEquipment {
-        <<interface>>
-        +EquipmentSlot Slot
-        +int BonusValue
-        +OnEquip()
-        +OnUnequip()
-    }
+    NonPlayerCharacter <|-- Enemy
 
-    class IConsumable {
-        <<interface>>
-        +Consume()
-    }
+    IPlayerCharacter <|-- PlayerCharacter
 
-    class IInventory {
-        <<interface>>
-        +List~IItem~ Items
-        +int Capacity
-        +int Gold
-        +AddItem()
-        +RemoveItem()
-        +AddGold()
-        +SpendGold()
-    }
+    PlayerCharacter <|-- Warrior
 
-    ICharacter <|-- Character
-    Character <|-- PlayerCharacter
-    Character <|-- NonPlayerCharacter
-    NonPlayerCharacter <|-- Enemy
-    PlayerCharacter <|-- Warrior
-    PlayerCharacter <|-- Mage
-    PlayerCharacter <|-- Rogue
-    IItem <|-- IEquipment
-    IItem <|-- IConsumable
-    PlayerCharacter --> IInventory
-    IInventory --> IItem
+    PlayerCharacter <|-- Mage
+
+    PlayerCharacter <|-- Rogue
+
+  
+
+    PlayerCharacter --> IInventory : Inventory
+
+    PlayerCharacter --> IEquipment : equips
+
+    IInventory --> IItem
+
+    IItem <|-- IEquipment
+
+    IItem <|-- IConsumable
+
+  
+
+    class IHasDomainEvents {
+
+        <<interface>>
+
+        +IReadOnlyList<IDomainEvent> DomainEvents
+
+        +ClearDomainEvents()
+
+    }
+
+    class DomainEntity {
+
+        <<abstract>>
+
+        +Guid Id
+
+        +int Version
+
+        +IReadOnlyList<IDomainEvent> DomainEvents
+
+        +ClearDomainEvents()
+
+    }
+
+    class ICharacter {
+
+        <<interface>>
+
+        +string Name
+
+        +int Health
+
+        +int MaxHealth
+
+        +int Level
+
+        +bool IsAlive
+
+        +Attack(target)
+
+        +TakeDamage(damage)
+
+        +Heal(amount)
+
+        +LevelUp()
+
+    }
+
+    class Character {
+
+        <<abstract>>
+
+        -string _name
+
+        -int _health
+
+        -int _maxHealth
+
+        -int _level
+
+        -int _strength
+
+        -int _defense
+
+        +CalculateDamage()
+
+        +OnBeforeAttack()
+
+        +OnAfterAttack()
+
+        +OnDeath()
+
+    }
+
+    class INonPlayerCharacter{
+
+        <<interface>>
+
+        +bool IsFriendly
+
+        +string Dialogue
+
+        +Interact(player)
+
+    }
+
+    class NonPlayerCharacter {
+
+        <<abstract>>
+
+        +bool IsFriendly
+
+        +string Dialogue
+
+        +Interact(player)
+
+    }
+
+    class IPlayerCharacter {
+
+        <<interface>>
+
+        +int Experience
+
+        +int ExperienceToNextLevel
+
+        +IInventory Inventory
+
+        +GainExperience(amount)
+
+        +EquipItem(item)
+
+        +UseItem(item)
+
+        +UseSpecialAbility(target)
+
+    }
+
+    class PlayerCharacter {
+
+        <<abstract>>
+
+        -int _experience
+
+        -IInventory _inventory
+
+        -Dictionary<EquipmentSlot, IEquipment> _equippedItems
+
+        +GainExperience(amount)
+
+        +EquipItem(item)
+
+        +UseItem(item)
+
+        +UseSpecialAbility(target)
+
+    }
+
+    class Warrior {
+
+        +Create(name)
+
+        +UseSpecialAbility(target)
+
+    }
+
+    class Mage {
+
+        -int _mana
+
+        -int _maxMana
+
+        +int Mana
+
+        +int MaxMana
+
+        +SpendMana(amount)
+
+        +RestoreMana(amount)
+
+        +Create(name)
+
+        +UseSpecialAbility(target)
+
+    }
+
+    class Rogue {
+
+        -double _criticalChance
+
+        +double CriticalChance
+
+        +Create(name)
+
+        +UseSpecialAbility(target)
+
+        +Attack(target)
+
+    }
+
+    class Enemy {
+
+        <<abstract>>
+
+        +int ExperienceReward
+
+        +IReadOnlyList<IItem> LootTable
+
+        +DropLoot()
+
+        +Interact(player)
+
+        +OnDeath()
+
+    }
+
+    class IInventory {
+
+        <<interface>>
+
+        +IReadOnlyList<IItem> Items
+
+        +int Capacity
+
+        +int Gold
+
+        +AddItem(item)
+
+        +RemoveItem(item)
+
+        +AddGold(amount)
+
+        +SpendGold(amount)
+
+    }
+
+    class IItem {
+
+        <<interface>>
+
+        +string Name
+
+        +string Description
+
+        +int Value
+
+        +ItemType Type
+
+    }
+
+    class IEquipment {
+
+        <<interface>>
+
+        +EquipmentSlot Slot
+
+        +int BonusValue
+
+        +OnEquip(character)
+
+        +OnUnequip(character)
+
+    }
+
+    class IConsumable {
+
+        <<interface>>
+
+        +OnUse(character)
+
+    }
 ```
+
+### Character Specializations
+
+#### Warrior
+
+- **High Health & Defense**: Tank role with superior survivability
+- **Powerful Attacks**: Special ability deals double damage
+- **Equipment Focus**: Can carry more items and equipment
+- **Starting Stats**: 150 HP, 20 Strength, 10 Defense
+
+#### Mage
+
+- **Mana System**: Uses mana for powerful spells
+- **Magical Abilities**: Special ability costs mana but deals triple damage
+- **Lower Health**: Balanced by powerful ranged attacks
+- **Starting Stats**: 100 HP, 10 Strength, 5 Defense, 150 Mana
+
+#### Rogue
+
+- **Critical Hits**: Chance for double damage on attacks
+- **Agility Focus**: Balanced stats with critical strike mechanics
+- **Stealth Abilities**: Backstab special ability for triple damage
+- **Starting Stats**: 120 HP, 15 Strength, 8 Defense, 15% Crit Chance
+
+### Core Architectural Principle: Abstract Behavior + Data-Driven Configuration
+
+#### What Goes in C# Abstract Classes (The "How")
+
+Abstract classes define behavioral contracts and domain rules:
+```
+Character (abstract)
+├── PlayerCharacter (abstract) - experience, inventory, equipment mechanics
+│   ├── WarriorType (enum) - different stat growth, special abilities
+│   ├── MageType (enum)
+│   └── RogueType (enum)
+├── NonPlayerCharacter (abstract)
+│   ├── Enemy (abstract) - combat, loot dropping, AI behavior
+│   ├── QuestGiver (abstract) - quest management, dialogue systems
+│   ├── Merchant (abstract) - trading, inventory management
+│   └── Guard (abstract) - patrol behavior, law enforcement
+```
+
+#### What Goes in Database (The "What")
+
+Database stores specific instances and configuration data:
+```
+EnemyTemplates Table:
+- "Fierce Goblin Warrior" (EnemyType: Humanoid)
+- "Ancient Red Dragon" (EnemyType: Dragon)
+- "Skeleton Archer" (EnemyType: Undead)
+
+QuestGiverTemplates Table:
+- "Village Elder Marcus" (Location: Starting Village)
+- "Mysterious Hooded Figure" (Location: Dark Forest)
+```
+
+####  Perfect Examples of This Pattern:
+
+1. **Characters - Behavior vs Instance**
+    **C# Abstract Classes:**
+
+    **Character** → base health/combat system
+    **Enemy** → loot dropping, aggro mechanics
+    **QuestGiver** → quest offering, dialogue trees
+    **Merchant** → buying/selling, inventory refresh
+
+   ** Database Instances:**
+
+    Specific enemies: "Goblin Scout", "Dragon Lord Pyraxis"
+    Specific quest givers: "Blacksmith Jonas", "Wizard Merlin"
+
+2. **Items - Type vs Specific Items**
+    **C# Abstract Classes:**
+    ```
+    Item (abstract)
+    ├── Equipment (abstract) - can be equipped, stat bonuses
+    │   ├── Weapon (abstract) - damage calculation, attack mechanics
+    │   │   ├── Sword (abstract) - slashing damage, parry ability
+    │   │   ├── Bow (abstract) - ranged attacks, ammo system
+    │   │   └── Staff (abstract) - spell power, mana efficiency
+    │   └── Armor (abstract) - damage reduction, movement penalties
+    │       ├── LightArmor (abstract) - mobility bonus
+    │       ├── HeavyArmor (abstract) - max protection
+    │       └── Robe (abstract) - spell enhancement
+    └── Consumable (abstract) - single-use, immediate effects
+        ├── Potion (abstract) - healing/buff mechanics
+        ├── Scroll (abstract) - spell casting
+        └── Food (abstract) - temporary bonuses
+    ```
+
+    **Database Instances:**
+    ```
+    SwordTemplates:
+    - "Rusty Iron Sword" (damage: 5-8, durability: 50)
+    - "Excalibur" (damage: 25-30, special: +10 vs undead)
+
+    PotionTemplates:
+    - "Minor Health Potion" (healing: 25hp)
+    - "Elixir of Giant Strength" (+5 STR for 10 minutes)
+    ```
+#### Key Benefits of This Approach:
+**1. Behavioral Consistency**
+   - All swords behave the same way (swing, parry, durability)
+   - All enemies follow same combat rules
+   - All quest givers use same dialogue system
+
+**2. Content Creation Flexibility**
+   - Game designers create items without touching code
+   - Balance tweaks happen in database, not deployments
+   - Easy A/B testing of different configurations
+
+**3. Performance & Memory**
+    - Behavior code loaded once in memory
+    - Instance data loaded on-demand
+    - Factory patterns create instances from templates
+
+**4. Domain Integrity**
+    - Business rules enforced in C# (can't have negative damage)
+    - Type safety maintained (sword can't be consumed like potion)
+    - Event sourcing still works for state changes
+
+#### When to Add New Abstract Classes:
+**Add abstract class when you need NEW BEHAVIOR:**
+    - Mount (riding mechanics, speed bonuses)
+    - Building (construction, ownership, upgrades)
+    - Vehicle (movement, fuel, cargo)
+
+**Use database for NEW INSTANCES of existing behavior:**
+    - New weapon types using existing Sword mechanics
+    - New enemy types using existing Enemy AI
+    - New potions using existing Consumable effects
+
+#### Code Example of This Pattern:
+```cs
+// Abstract class defines HOW swords work
+public abstract class Sword : Weapon 
+{
+    public override AttackResult Attack(ICharacter target) 
+    {
+        // All swords use slashing damage calculation
+        var damage = CalculateSlashingDamage(target);
+        return new AttackResult(damage, AttackType.Slashing);
+    }
+}
+
+// Database template defines WHAT this specific sword is
+public class SwordTemplate 
+{
+    public string Name { get; set; } // "Flaming Blade of Doom"
+    public int BaseDamage { get; set; } // 15
+    public List<string> SpecialEffects { get; set; } // ["Fire", "Intimidation"]
+}
+
+// Factory creates concrete instance
+public class SwordInstance : Sword 
+{
+    public SwordInstance(SwordTemplate template) 
+    {
+        _name = template.Name;
+        _baseDamage = template.BaseDamage;
+        ApplySpecialEffects(template.SpecialEffects);
+    }
+}
+```
+
+---
+
+## 🔄 Event-Driven Architecture
+
+The system uses Domain Events to maintain loose coupling and enable complex business workflows:
 
 ```mermaid
-graph TD
-    subgraph "Domain Layer"
-        D[Domain Entities]
-        DI[Domain Interfaces]
-    end
-
-    subgraph "Application Layer"
-        I[Application Interfaces]
-        S[Application Services]
-        I --defines--> IGameSaveService
-        I --defines--> IGameSaveRepository
-        I --defines--> IEventStoreRepository
-        S --implements--> IGameSaveService
-        S --depends on--> IGameSaveRepository
-        S --depends on--> IEventStoreRepository
-        S --depends on--> D
-    end
-
-    subgraph "Infrastructure Layer"
-        DB[Database]
-        RI[Repository Implementations]
-        RI --implements--> IGameSaveRepository
-        RI --implements--> IEventStoreRepository
-        RI --uses--> DB
-    end
+sequenceDiagram
+    participant Client
+    participant API as Web API
+    participant MediatR
+    participant Handler as Command Handler
+    participant Domain as Domain Entity
+    participant EventStore as Event Store
+    participant EventHandler as Event Handler
+    participant SignalR as SignalR Hub
     
-    subgraph "Presentation/API Layer"
-        P[Presentation UI]
-        C[Controllers]
-        P --uses--> IGameSaveService
-        C --uses--> IGameSaveService
-    end
-
-    %% Dependencies point inward
-    D ----> DI
-    P -.depends on.-> S
-    P -.depends on.-> I
-    C -.depends on.-> S
-    C -.depends on.-> I
-    S -.depends on.-> D
-    S -.depends on.-> DI
-    RI -.depends on.-> I
-    RI -.depends on.-> D
-    
-    %% Critical: Dependency Inversion
-    IGameSaveRepository -.defined by.-> Application Layer
-    IGameSaveRepository -.implemented by.-> RI
-    IEventStoreRepository -.defined by.-> Application Layer
-    IEventStoreRepository -.implemented by.-> RI
-    IGameSaveService -.defined by.-> Application Layer
-    IGameSaveService -.implemented by.-> S
-    
-    %% Composition Root
-    CR[Composition Root]
-    CR --registers--> RI
-    CR --registers--> S
-    CR --registers--> D
+    Client->>API: POST /characters/{id}/levelup
+    API->>MediatR: Send LevelUpCharacterCommand
+    MediatR->>Handler: Handle Command
+    Handler->>Domain: character.LevelUp()
+    Domain->>Domain: Raise CharacterLeveledUp Event
+    Handler->>EventStore: Save Events
+    EventStore->>EventHandler: Dispatch Events
+    EventHandler->>SignalR: Broadcast Notification
+    SignalR->>Client: Real-time Update
+    Handler->>API: Return Success
+    API->>Client: HTTP 200 OK
 ```
 
+### Domain Events
 
+```mermaid
+graph LR
+    subgraph "Character Events"
+        A[CharacterCreatedEvent]
+        B[CharacterLeveledUp]
+        C[CharacterDied]
+        D[PlayerGainedExperience]
+        E[PlayerLocationChanged]
+    end
+    
+    subgraph "Combat Events"
+        F[CombatVictoryEvent]
+        G[CombatDefeatEvent]
+    end
+    
+    subgraph "Game Events"
+        H[GameSavedEvent]
+        I[GameLoadedEvent]
+    end
+    
+    subgraph "Event Handlers"
+        J[CharacterLeveledUpHandler]
+        K[CombatVictoryHandler]
+        L[NotificationService]
+        M[CharacterStateChangedHandler]
+    end
+    
+    A --> J
+    B --> J
+    B --> L
+    C --> L
+    F --> K
+    F --> M
+    H --> M
+```
+
+---
+
+## 🏛️ CQRS Implementation
+
+Commands and Queries are separated to optimize for different concerns:
+
+### Command Flow
+
+```mermaid
+graph LR
+    A[Client Request] --> B[API Controller]
+    B --> C[MediatR]
+    C --> D[Validation Behavior]
+    D --> E[Command Handler]
+    E --> F[Domain Entity]
+    F --> G[Event Store]
+    G --> H[Event Dispatcher]
+    H --> I[Event Handlers]
+    
+    style E fill:#ffcdd2
+    style F fill:#e1f5fe
+    style I fill:#f3e5f5
+```
+
+### Query Flow
+
+```mermaid
+graph LR
+    A[Client Request] --> B[API Controller]
+    B --> C[MediatR]
+    C --> D[Query Handler]
+    D --> E[Event Store/Repository]
+    E --> F[Domain Reconstruction]
+    F --> G[DTO Mapping]
+    G --> H[Response]
+    
+    style D fill:#e8f5e8
+    style E fill:#fff3e0
+    style G fill:#f3e5f5
+```
+
+### Commands
+
+- **CreateCharacterCommand**: Creates new player characters
+- **LevelUpCharacterCommand**: Advances character level
+- **EquipItemCommand**: Equips items to characters
+- **UseItemCommand**: Consumes items from inventory
+
+### Queries
+
+- **GetCharacterByIdQuery**: Retrieves character details
+- **GetAllCharactersQuery**: Lists all characters
+- **GetCharacterInventoryQuery**: Retrieves character inventory
+- **GetCharacterHistoryQuery**: Gets character event history
+
+---
+
+## 💾 Event Sourcing
+
+Characters are persisted as streams of events rather than current state:
+
+```mermaid
+graph TB
+    subgraph "Event Stream"
+        A[CharacterCreatedEvent<br/>Name: 'Aragorn'<br/>Type: Warrior]
+        B[CharacterLeveledUp<br/>Old: 1, New: 2<br/>Stats: +10 HP, +2 STR]
+        C[PlayerGainedExperience<br/>Amount: 150<br/>Total: 350]
+        D[CharacterLeveledUp<br/>Old: 2, New: 3<br/>Stats: +10 HP, +2 STR]
+    end
+    
+    subgraph "Current State Reconstruction"
+        E[Load Events] --> F[Apply Events in Order]
+        F --> G[Warrior 'Aragorn'<br/>Level 3<br/>HP: 130/130<br/>STR: 24]
+    end
+    
+    A --> E
+    B --> F
+    C --> F
+    D --> F
+    
+    style A fill:#e3f2fd
+    style B fill:#e8f5e8
+    style C fill:#fff3e0
+    style D fill:#e8f5e8
+    style G fill:#ffcdd2
+```
+
+### Event Store Schema
+
+```sql
+CREATE TABLE StoredEvents (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    AggregateId UNIQUEIDENTIFIER NOT NULL,
+    AggregateType NVARCHAR(255) NOT NULL,
+    Version INT NOT NULL,
+    EventType NVARCHAR(255) NOT NULL,
+    EventData NVARCHAR(MAX) NOT NULL,
+    Timestamp DATETIME2 NOT NULL,
+    UserId NVARCHAR(255) NULL
+);
+```
+
+### Benefits
+
+- **Complete Audit Trail**: Every change is recorded
+- **Temporal Queries**: Query state at any point in time
+- **Bug Investigation**: Replay events to understand issues
+- **Analytics**: Rich data for understanding player behavior
+
+---
+
+## 🎮 Game Systems
+
+### Combat System
+
+```mermaid
+stateDiagram-v2
+    [*] --> SelectTarget
+    SelectTarget --> CalculateDamage
+    CalculateDamage --> ApplyDamage
+    ApplyDamage --> CheckCritical: Rogue
+    CheckCritical --> ApplyDamage
+    ApplyDamage --> CheckDeath
+    CheckDeath --> Victory: Enemy Defeated
+    CheckDeath --> Continue: Both Alive
+    Continue --> EnemyTurn
+    EnemyTurn --> SelectTarget
+    Victory --> DropLoot
+    DropLoot --> GainExperience
+    GainExperience --> [*]
+```
+
+### Inventory System
+
+```mermaid
+graph LR
+    subgraph "Inventory Management"
+        A[Add Item] --> B{Space Available?}
+        B -->|Yes| C[Add to Collection]
+        B -->|No| D[Inventory Full]
+        C --> E[Update UI]
+    end
+    
+    subgraph "Equipment System"
+        F[Equip Item] --> G{Is Equipment?}
+        G -->|Yes| H{Slot Available?}
+        G -->|No| I[Cannot Equip]
+        H -->|Yes| J[Equip Item]
+        H -->|No| K[Unequip Current]
+        K --> J
+        J --> L[Apply Bonuses]
+        L --> M[Update Stats]
+    end
+    
+    C --> F
+```
+
+### Quest System (Planned)
+
+```mermaid
+graph TB
+    A[Quest Giver] --> B[Accept Quest]
+    B --> C[Track Objectives]
+    C --> D{All Complete?}
+    D -->|No| E[Continue Progress]
+    E --> C
+    D -->|Yes| F[Return to Giver]
+    F --> G[Receive Rewards]
+    G --> H[Experience]
+    G --> I[Gold]
+    G --> J[Items]
+```
+
+---
+
+## 🔧 Technical Implementation
+
+### Dependency Injection Setup
+
+```csharp
+// Program.cs - Web API
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Application Layer Registration
+public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+{
+    services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+    services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    
+    // Pipeline behaviors
+    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+    
+    // Event infrastructure
+    services.AddScoped<IEventDispatcher, EventDispatcher>();
+    services.AddScoped<IEventSourcingService, EventSourcingService>();
+    
+    return services;
+}
+```
+
+### Pipeline Behaviors
+
+```mermaid
+graph LR
+    A[Request] --> B[Validation Behavior]
+    B --> C[Logging Behavior]
+    C --> D[Performance Behavior]
+    D --> E[Command/Query Handler]
+    E --> F[Event Sourcing Behavior]
+    F --> G[Response]
+    
+    style B fill:#ffcdd2
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+    style E fill:#e1f5fe
+    style F fill:#f3e5f5
+```
+
+### API Versioning
+
+```csharp
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class CharactersController : ControllerBase
+{
+    // API endpoints
+}
+```
+
+### Real-time Notifications
+
+```csharp
+// SignalR Hub for real-time updates
+public class GameHub : Hub
+{
+    public async Task JoinCharacterGroup(Guid characterId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, characterId.ToString());
+    }
+}
+
+// Event handler that broadcasts notifications
+public class NotificationService : IEventHandler<CharacterLeveledUp>
+{
+    public async Task HandleAsync(CharacterLeveledUp @event, CancellationToken cancellationToken)
+    {
+        await _hubContext.Clients.Group(@event.AggregateId.ToString())
+            .SendAsync("GameEvent", new { Type = "level-up", Data = @event });
+    }
+}
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- .NET 8 SDK
+- Node.js 18+ (for Angular UI)
+- SQLite (for local development)
+- Visual Studio 2022 or VS Code
+
+### Installation
+
+1. **Clone the Repository**
+    
+    ```bash
+    git clone https://github.com/yourusername/rpg-game.git
+    cd rpg-game
+    ```
+    
+2. **Build the Solution**
+    
+    ```bash
+    dotnet build
+    ```
+    
+3. **Run Console Application**
+    
+    ```bash
+    cd src/RpgGame.Presentation
+    dotnet run
+    ```
+    
+4. **Run Web API**
+    
+    ```bash
+    cd src/RpgGame.WebApi
+    dotnet run
+    ```
+    
+    API will be available at `https://localhost:7153`
+    
+5. **Run Angular UI**
+    
+    ```bash
+    cd src/RpgGame.AngularUI/rpg-game-ui
+    npm install
+    ng serve
+    ```
+    
+    UI will be available at `http://localhost:4200`
+    
+
+### Database Setup
+
+The application uses SQLite with Entity Framework Core. The database is created automatically on first run.
+
+---
+
+## 📊 Project Structure
+
+```
+src/
+├── RpgGame.Domain/                 # Core business logic
+│   ├── Entities/                   # Domain entities
+│   │   ├── Characters/            # Character hierarchies
+│   │   ├── Items/                 # Item system
+│   │   ├── Inventory/             # Inventory management
+│   │   └── World/                 # Game world
+│   ├── Interfaces/                # Domain interfaces
+│   ├── Events/                    # Domain events
+│   ├── Enums/                     # Domain enumerations
+│   └── Base/                      # Base classes
+│
+├── RpgGame.Application/           # Application orchestration
+│   ├── Commands/                  # Write operations
+│   ├── Queries/                   # Read operations
+│   ├── Events/                    # Event handling
+│   ├── Services/                  # Application services
+│   ├── Behaviors/                 # Pipeline behaviors
+│   └── Interfaces/                # Application interfaces
+│
+├── RpgGame.Infrastructure/        # External concerns
+│   ├── Persistence/              # Data access
+│   │   ├── EFCore/               # Entity Framework
+│   │   ├── Repositories/         # Repository implementations
+│   │   └── EventStore/           # Event storage
+│   └── Services/                 # External services
+│
+├── RpgGame.Presentation/         # Console UI
+│   ├── Views/                    # Console views
+│   ├── Commands/                 # Console commands
+│   └── ConsoleUI/                # Console infrastructure
+│
+├── RpgGame.WebApi/               # REST API
+│   ├── Controllers/              # API controllers
+│   ├── DTOs/                     # Data transfer objects
+│   ├── Filters/                  # API filters
+│   ├── Hubs/                     # SignalR hubs
+│   └── Services/                 # API services
+│
+└── RpgGame.AngularUI/            # Angular frontend
+    └── rpg-game-ui/
+        ├── src/app/
+        │   ├── components/       # Angular components
+        │   ├── services/         # Angular services
+        │   └── models/           # TypeScript models
+        └── ...
+```
+
+---
+
+## 🧪 Testing Strategy
+
+### Unit Tests
+
+```csharp
+[TestClass]
+public class CharacterTests
+{
+    [TestMethod]
+    public void Character_LevelUp_ShouldIncreaseStats()
+    {
+        // Arrange
+        var warrior = Warrior.Create("TestWarrior");
+        var initialLevel = warrior.Level;
+        var initialHealth = warrior.MaxHealth;
+
+        // Act
+        warrior.LevelUp();
+
+        // Assert
+        Assert.AreEqual(initialLevel + 1, warrior.Level);
+        Assert.AreEqual(initialHealth + 10, warrior.MaxHealth);
+    }
+}
+```
+
+### Integration Tests
+
+```csharp
+[TestClass]
+public class CharacterControllerTests : IntegrationTestBase
+{
+    [TestMethod]
+    public async Task CreateCharacter_ShouldReturnCreatedCharacter()
+    {
+        // Arrange
+        var request = new CreateCharacterDto 
+        { 
+            Name = "TestHero", 
+            Type = CharacterType.Warrior 
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/v1/characters", request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var character = await response.Content.ReadFromJsonAsync<CharacterDto>();
+        Assert.AreEqual("TestHero", character.Name);
+    }
+}
+```
+
+---
+
+## 📈 Future Enhancements
+
+### Planned Features
+
+- **Multiplayer Support**: Real-time multiplayer battles
+- **Advanced Quest System**: Branching storylines and complex objectives
+- **Crafting System**: Item creation and enhancement
+- **Guild System**: Player organizations and group activities
+- **PvP Arena**: Player vs Player combat
+- **Achievement System**: Unlockable rewards and progression tracking
+
+### Technical Improvements
+
+- **Microservices**: Split into bounded contexts
+- **CQRS Read Models**: Optimized query projections
+- **Distributed Event Store**: Scale event storage
+- **Caching Layer**: Redis for performance optimization
+- **GraphQL API**: Flexible query capabilities
+- **Mobile Apps**: Native iOS/Android clients
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+1. **Fork the Repository**
+2. **Create a Feature Branch**
+    
+    ```bash
+    git checkout -b feature/amazing-feature
+    ```
+    
+3. **Commit Changes**
+    
+    ```bash
+    git commit -m 'Add amazing feature'
+    ```
+    
+4. **Push to Branch**
+    
+    ```bash
+    git push origin feature/amazing-feature
+    ```
+    
+5. **Open a Pull Request**
+
+### Development Guidelines
+
+- Follow SOLID principles
+- Write comprehensive tests
+- Use meaningful commit messages
+- Document public APIs
+- Maintain backwards compatibility
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](https://claude.ai/chat/LICENSE) file for details.
+
+---
+
+## 🏆 Acknowledgments
+
+- **Eric Evans** - Domain-Driven Design concepts
+- **Robert C. Martin** - Clean Architecture principles
+- **Martin Fowler** - Enterprise patterns and event sourcing
+- **Microsoft** - .NET ecosystem and documentation
+- **Angular Team** - Frontend framework
+- **MediatR Contributors** - CQRS implementation
