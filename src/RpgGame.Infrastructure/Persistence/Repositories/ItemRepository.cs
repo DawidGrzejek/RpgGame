@@ -1,4 +1,5 @@
-﻿using RpgGame.Domain.Interfaces.Items;
+﻿using RpgGame.Application.Interfaces.Repositories;
+using RpgGame.Domain.Interfaces.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;

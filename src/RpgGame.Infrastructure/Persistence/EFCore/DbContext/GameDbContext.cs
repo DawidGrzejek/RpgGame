@@ -2,6 +2,8 @@
 using RpgGame.Domain.Events.Base;
 using RpgGame.Infrastructure.Persistence.EFCore.Configurations;
 using Microsoft.Extensions.Configuration;
+using RpgGame.Domain.Entities.Users;
+using RpgGame.Infrastructure.Persistence.Entities;
 
 namespace RpgGame.Infrastructure.Persistence.EFCore
 {
@@ -9,6 +11,8 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
     {
         public DbSet<GameSave> GameSaves { get; set; }
         public DbSet<StoredEvent> Events { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         // Default constructor for use without explicit options
         public GameDbContext() : base()
@@ -18,6 +22,40 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         // Constructor that accepts options for dependency injection and testing
         public GameDbContext(DbContextOptions<GameDbContext> options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDefaultSchema("RpgGame");
+            modelBuilder.ApplyConfiguration(new GameSaveConfiguration());
+            modelBuilder.ApplyConfiguration(new StoredEventConfiguration());
+            //modelBuilder.ApplyConfiguration(new CharacterConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+            
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.AspNetUserId).IsRequired();
+                entity.Property(u => u.Username).IsRequired().HasMaxLength(50);
+                entity.Property(u => u.Email).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.Roles)
+                    .HasConversion(
+                        v => string.Join(',', v),
+                        v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                    );
+                entity.OwnsOne(u => u.Preferences);
+            });
+
+            // RefreshToken configuration
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(rt => rt.Id);
+                entity.Property(rt => rt.Token).IsRequired();
+                entity.Property(rt => rt.UserId).IsRequired();
+                entity.HasIndex(rt => rt.Token).IsUnique();
+            });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -62,13 +100,6 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
                     optionsBuilder.EnableSensitiveDataLogging(); // Enable sensitive data logging in development
                 }
             }
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasDefaultSchema("RpgGame");
-            modelBuilder.ApplyConfiguration(new GameSaveConfiguration());
-            modelBuilder.ApplyConfiguration(new StoredEventConfiguration());
         }
     }
 }

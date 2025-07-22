@@ -24,6 +24,27 @@ namespace RpgGame.Domain.Common
         public IReadOnlyList<OperationError> Errors => _errors.AsReadOnly();
 
         /// <summary>
+        /// Gets all error moessages as a list of strings.
+        /// </summary>
+        public List<string> ErrorMessages => _errors.Select(e => e.Description).ToList();
+
+        /// <summary>
+        /// Gets all error codes as a list of strings.
+        /// </summary>
+        public List<string> ErrorCodes => _errors.Select(e => e.Code).ToList();
+
+        /// <summary>
+        /// Adds an error to th reuslt (for use in derived types).
+        /// </summary>
+        /// <param name="error"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        protected void AddError(OperationError error)
+        {
+            if (error != null)
+                _errors.Add(error);
+        }
+
+        /// <summary>
         /// Gets the data returned by the operation, if any.
         /// </summary>
         public object? Data { get; protected set; }

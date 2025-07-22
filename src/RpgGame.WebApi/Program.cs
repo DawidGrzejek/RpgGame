@@ -114,8 +114,6 @@ try
         else
             logger.Warn("CharacterService (concrete) could NOT be resolved at runtime (expected if only registered by interface).");
     }
-    
-    // ...existing code...
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -150,3 +148,6 @@ finally
 {
     NLog.LogManager.Shutdown();
 }
+
+// Make Program class accessible for integration tests
+public partial class Program { }

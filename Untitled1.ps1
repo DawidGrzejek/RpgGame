@@ -1,4 +1,18 @@
-﻿clear-host
+﻿netstat -ano | findstr :4200
+
+$idNumber = read-host 'Podaj <PID> procesu do zabicia (wciśniej enter aby pominąć): '
+
+if (![string]::IsNullOrEmpty($idNumber))
+{
+    Write-Host "Zabijam proces o numerze <PID>: $idNumber"
+    Stop-Process $idNumber -Force
+}
+else
+{
+    Write-Host "Przechodzę do uruchomienia aplikacji Angular..."
+}
+
+clear-host
 $PSStyle.OutputRendering = 'Ansi'
 
 $asciiArt = @"

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using RpgGame.Application.Repositories;
+using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
 using System.Collections.Generic;

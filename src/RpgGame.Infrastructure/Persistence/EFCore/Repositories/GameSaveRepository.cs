@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Application.Repositories;
 using RpgGame.Application.Serialization.DTOs;
 using RpgGame.Application.Serialization.Mappers;

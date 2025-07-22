@@ -1,4 +1,5 @@
 ﻿using RpgGame.Application.Events;
+using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Application.Repositories;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;

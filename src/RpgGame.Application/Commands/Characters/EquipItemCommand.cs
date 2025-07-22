@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using RpgGame.Application.Events;
-using RpgGame.Application.Repositories;
+using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.Items;
 using System;

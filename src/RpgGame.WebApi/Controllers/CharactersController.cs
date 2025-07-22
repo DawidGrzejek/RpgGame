@@ -24,7 +24,6 @@ namespace RpgGame.WebApi.Controllers
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly ILogger<CharactersController> _logger;
-        private readonly ICharacterService _characterService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CharactersController"/> class.
@@ -32,19 +31,16 @@ namespace RpgGame.WebApi.Controllers
         /// <param name="mediator">The mediator instance used for handling requests and commands.</param>
         /// <param name="mapper">The mapper instance used for mapping objects between models and DTOs.</param>
         /// <param name="logger">The logger instance used for logging application events and errors.</param>
-        /// <param name="characterService">The service instance used for managing character-related operations.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters <paramref name="mediator"/>, <paramref name="mapper"/>, <paramref
-        /// name="logger"/>, or <paramref name="characterService"/> is <see langword="null"/>.</exception>
+        /// name="logger"/> is <see langword="null"/>.</exception>
         public CharactersController(
             IMediator mediator,
             IMapper mapper,
-            ILogger<CharactersController> logger,
-            ICharacterService characterService)
+            ILogger<CharactersController> logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         }
 
         /// <summary>
@@ -74,7 +70,7 @@ namespace RpgGame.WebApi.Controllers
             var query = new GetCharacterByIdQuery { CharacterId = id };
             var result = await _mediator.Send(query);
 
-            if (!result.Success)
+            if (!result.Succeeded)
                 return NotFound(result.Message);
 
             return Ok(_mapper.Map<CharacterDto>(result.Data));
@@ -126,7 +122,7 @@ namespace RpgGame.WebApi.Controllers
             var query = new GetCharacterHistoryQuery { CharacterId = id };
             var result = await _mediator.Send(query);
 
-            if (!result.Success)
+            if (!result.Succeeded)
                 return NotFound(result.Message);
 
             // Transform events to a more user-friendly format

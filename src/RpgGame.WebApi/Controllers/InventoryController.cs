@@ -43,7 +43,7 @@ namespace RpgGame.WebApi.Controllers
             var query = new GetCharacterInventoryQuery { CharacterId = characterId };
             var result = await _mediator.Send(query);
 
-            if (!result.Success)
+            if (!result.Succeeded)
                 return NotFound(result.Message);
 
             return Ok(_mapper.Map<IEnumerable<ItemDto>>(result.Data));

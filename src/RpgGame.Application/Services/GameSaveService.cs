@@ -1,6 +1,6 @@
 ﻿using RpgGame.Application.Events;
+using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Application.Interfaces.Services;
-using RpgGame.Application.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Events.Game;
 using RpgGame.Domain.Interfaces.World;

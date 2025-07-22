@@ -28,6 +28,7 @@
 	  <ProjectReference Include="..\..\src\RpgGame.Application\RpgGame.Application.csproj" />
 	  <ProjectReference Include="..\..\src\RpgGame.Domain\RpgGame.Domain.csproj" />
 	  <ProjectReference Include="..\..\src\RpgGame.Infrastructure\RpgGame.Infrastructure.csproj" />
+	  <ProjectReference Include="..\..\src\RpgGame.WebApi\RpgGame.WebApi.csproj" />
 	</ItemGroup>
 
   <ItemGroup>

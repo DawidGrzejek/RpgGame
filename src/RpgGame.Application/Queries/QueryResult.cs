@@ -1,18 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using RpgGame.Domain.Common;
+using System.Collections.Generic;
 
 namespace RpgGame.Application.Queries
 {
-    public class QueryResult<T>
+    public class QueryResult<T> : OperationResult
     {
-        public bool Success { get; }
         public string Message { get; }
-        public T Data { get; }
+        public new T? Data => (T?)base.Data;
 
-        protected QueryResult(bool success, string message, T data)
+        protected QueryResult(bool success, string message, T? data)
+            : base(success, data)
         {
-            Success = success;
             Message = message;
-            Data = data;
         }
 
         public static QueryResult<T> Ok(T data, string message = "Query executed successfully")
@@ -20,9 +19,15 @@ namespace RpgGame.Application.Queries
             return new QueryResult<T>(true, message, data);
         }
 
-        public static QueryResult<T> Fail(string message)
+        public static QueryResult<T> Fail(string message, IEnumerable<OperationError>? errors = null)
         {
-            return new QueryResult<T>(false, message, default);
+            var result = new QueryResult<T>(false, message, default);
+            if (errors != null)
+            {
+                foreach (var error in errors)
+                    result.AddError(error);
+            }
+            return result;
         }
     }
 
@@ -63,9 +68,15 @@ namespace RpgGame.Application.Queries
             return new PagedQueryResult<T>(true, message, data, totalCount, pageNumber, pageSize);
         }
 
-        public static new PagedQueryResult<T> Fail(string message)
+        public static new PagedQueryResult<T> Fail(string message, IEnumerable<OperationError>? errors = null)
         {
-            return new PagedQueryResult<T>(false, message, Array.Empty<T>(), 0, 0, 10);
+            var result = new PagedQueryResult<T>(false, message, Array.Empty<T>(), 0, 0, 10);
+            if (errors != null)
+            {
+                foreach (var error in errors)
+                    result.AddError(error);
+            }
+            return result;
         }
     }
 }

@@ -23,6 +23,81 @@ namespace RpgGame.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("RpgGame.Domain.Entities.Users.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AspNetUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("asp_net_user_id");
+
+                    b.Property<string>("CharacterIds")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("character_ids");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_login_at");
+
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("roles");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("username");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.HasIndex("AspNetUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_asp_net_user_id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_users_created_at");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_email");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("ix_users_is_active");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_username");
+
+                    b.ToTable("users", "RpgGame");
+                });
+
             modelBuilder.Entity("RpgGame.Domain.Events.Base.StoredEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -137,6 +212,214 @@ namespace RpgGame.Infrastructure.Migrations
                         .HasDatabaseName("ix_game_saves_save_name");
 
                     b.ToTable("game_saves", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Infrastructure.Persistence.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_revoked");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("token");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_refresh_tokens_expires_at");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_refresh_tokens_user_id");
+
+                    b.ToTable("refresh_tokens", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Users.User", b =>
+                {
+                    b.OwnsOne("RpgGame.Domain.ValueObjects.Users.UserPreferences", "Preferences", b1 =>
+                        {
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<bool>("EmailNotifications")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(true)
+                                .HasColumnName("email_notifications");
+
+                            b1.Property<bool>("GameSoundEnabled")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(true)
+                                .HasColumnName("game_sound_enabled");
+
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid")
+                                .HasColumnName("preferences_id");
+
+                            b1.Property<string>("Language")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(10)
+                                .HasColumnType("character varying(10)")
+                                .HasDefaultValue("en")
+                                .HasColumnName("language");
+
+                            b1.Property<string>("Theme")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasDefaultValue("dark")
+                                .HasColumnName("theme");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("users", "RpgGame");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId")
+                                .HasConstraintName("fk_users_users_id");
+                        });
+
+                    b.OwnsOne("RpgGame.Domain.ValueObjects.Users.UserStatistics", "Statistics", b1 =>
+                        {
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<int>("CharactersCreated")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_characters_created");
+
+                            b1.Property<DateTime>("FirstLoginDate")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("statistics_first_login_date");
+
+                            b1.Property<bool>("HasCompleted10Quests")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(false)
+                                .HasColumnName("statistics_has_completed10quests");
+
+                            b1.Property<bool>("HasCreatedFirstCharacter")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(false)
+                                .HasColumnName("statistics_has_created_first_character");
+
+                            b1.Property<bool>("HasDefeated100Enemies")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(false)
+                                .HasColumnName("statistics_has_defeated100enemies");
+
+                            b1.Property<bool>("HasReachedLevel10")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(false)
+                                .HasColumnName("statistics_has_reached_level10");
+
+                            b1.Property<bool>("HasReachedLevel50")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("boolean")
+                                .HasDefaultValue(false)
+                                .HasColumnName("statistics_has_reached_level50");
+
+                            b1.Property<int>("HighestCharacterLevel")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_highest_character_level");
+
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid")
+                                .HasColumnName("statistics_id");
+
+                            b1.Property<DateTime?>("LastActiveDate")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("statistics_last_active_date");
+
+                            b1.Property<int>("TotalDeaths")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_total_deaths");
+
+                            b1.Property<int>("TotalEnemiesDefeated")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_total_enemies_defeated");
+
+                            b1.Property<int>("TotalLogins")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_total_logins");
+
+                            b1.Property<int>("TotalPlayTimeMinutes")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_total_play_time_minutes");
+
+                            b1.Property<int>("TotalQuestsCompleted")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("statistics_total_quests_completed");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("users", "RpgGame");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId")
+                                .HasConstraintName("fk_users_users_id");
+                        });
+
+                    b.Navigation("Preferences")
+                        .IsRequired();
+
+                    b.Navigation("Statistics")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
