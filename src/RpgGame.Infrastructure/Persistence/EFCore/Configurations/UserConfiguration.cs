@@ -30,10 +30,10 @@ namespace RpgGame.Infrastructure.Persistence.EFCore.Configurations
 
             builder.Property(u => u.CreatedAt)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("datetime2");
 
             builder.Property(u => u.LastLoginAt)
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("datetime2");
 
             builder.Property(u => u.IsActive)
                 .IsRequired()
@@ -100,10 +100,10 @@ namespace RpgGame.Infrastructure.Persistence.EFCore.Configurations
                     .HasDefaultValue(0);
 
                 stats.Property(s => s.FirstLoginDate)
-                    .HasColumnType("timestamp with time zone");
+                    .HasColumnType("datetime2");
 
                 stats.Property(s => s.LastActiveDate)
-                    .HasColumnType("timestamp with time zone");
+                    .HasColumnType("datetime2");
 
                 // Achievement flags
                 stats.Property(s => s.HasCreatedFirstCharacter)

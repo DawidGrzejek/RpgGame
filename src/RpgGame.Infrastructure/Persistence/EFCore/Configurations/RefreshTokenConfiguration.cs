@@ -25,12 +25,12 @@ namespace RpgGame.Infrastructure.Persistence.EFCore.Configurations
 
             builder.Property(rt => rt.ExpiresAt)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone");
+                .HasColumnType("datetime2");
 
             builder.Property(rt => rt.CreatedAt)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()");
 
             builder.Property(rt => rt.IsRevoked)
                 .HasDefaultValue(false);

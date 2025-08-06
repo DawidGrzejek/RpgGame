@@ -82,7 +82,7 @@ import { RegisterRequest } from '../../../models/auth.model';
             </div>
             <div *ngIf="isFieldInvalid('password')" class="error-message">
               <span *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</span>
-              <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+              <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 12 characters</span>
               <span *ngIf="registerForm.get('password')?.errors?.['pattern']">Password must contain at least one uppercase letter, one lowercase letter, and one number</span>
             </div>
           </div>
@@ -258,42 +258,6 @@ import { RegisterRequest } from '../../../models/auth.model';
       color: #6b7280;
     }
 
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-size: 14px;
-      color: #374151;
-    }
-
-    .checkbox-label input[type="checkbox"] {
-      display: none;
-    }
-
-    .checkbox-custom {
-      width: 16px;
-      height: 16px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      margin-right: 8px;
-      position: relative;
-      flex-shrink: 0;
-    }
-
-    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
-      background-color: #667eea;
-      border-color: #667eea;
-    }
-
-    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
-      content: '✓';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      font-size: 12px;
-    }
 
     .error-message {
       color: #ef4444;
@@ -423,7 +387,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [
         Validators.required,
-        Validators.minLength(8),
+        Validators.minLength(12),
         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
       ]],
       confirmPassword: ['', [Validators.required]],
@@ -482,7 +446,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     const password = this.registerForm.get('password')?.value || '';
     let score = 0;
 
-    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
     if (/[a-z]/.test(password)) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/\d/.test(password)) score++;

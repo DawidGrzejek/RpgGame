@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { LoginRequest } from '../../../models/auth.model';
+import { EmailValidators } from '../../../validators/email.validator';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,9 @@ import { LoginRequest } from '../../../models/auth.model';
               autocomplete="email">
             <div *ngIf="isFieldInvalid('email')" class="error-message">
               <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
-              <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+              <span *ngIf="loginForm.get('email')?.errors?.['enhancedEmail']">
+                {{ loginForm.get('email')?.errors?.['enhancedEmail']?.message }}
+              </span>
             </div>
           </div>
 
@@ -177,41 +180,6 @@ import { LoginRequest } from '../../../models/auth.model';
       padding: 4px;
     }
 
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-size: 14px;
-      color: #374151;
-    }
-
-    .checkbox-label input[type="checkbox"] {
-      display: none;
-    }
-
-    .checkbox-custom {
-      width: 16px;
-      height: 16px;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      margin-right: 8px;
-      position: relative;
-    }
-
-    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
-      background-color: #667eea;
-      border-color: #667eea;
-    }
-
-    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
-      content: '✓';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      font-size: 12px;
-    }
 
     .error-message {
       color: #ef4444;
@@ -339,7 +307,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, EmailValidators.enhancedEmail()]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });

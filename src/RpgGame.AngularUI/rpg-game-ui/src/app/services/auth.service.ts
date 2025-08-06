@@ -328,10 +328,15 @@ export class AuthService {
           this.logout();
           break;
         case 400:
-          // Map known error messages to AuthError enum, otherwise use VALIDATION_ERROR
-          errorMessage = (Object.values(AuthError) as string[]).includes(error.error?.message)
-            ? error.error.message as AuthError
-            : AuthError.VALIDATION_ERROR;
+          // Check if it's an AuthResponse with validation errors
+          if (error.error && error.error.errors && Array.isArray(error.error.errors)) {
+            errorMessage = error.error.errors.join(', ');
+          } else {
+            // Map known error messages to AuthError enum, otherwise use VALIDATION_ERROR
+            errorMessage = (Object.values(AuthError) as string[]).includes(error.error?.message)
+              ? error.error.message as AuthError
+              : AuthError.VALIDATION_ERROR;
+          }
           break;
         case 404:
           errorMessage = AuthError.USER_NOT_FOUND;

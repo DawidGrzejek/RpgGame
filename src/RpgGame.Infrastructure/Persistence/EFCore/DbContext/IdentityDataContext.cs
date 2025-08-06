@@ -7,6 +7,10 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
 {
     public class IdentityDataContext : IdentityDbContext<IdentityUser>
     {
+        public IdentityDataContext() : base()
+        {
+        }
+
         public IdentityDataContext(DbContextOptions<IdentityDataContext> options)
             : base(options)
         {
@@ -31,18 +35,17 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
                     .AddEnvironmentVariables()
                     .Build();
 
-                // Get connection string from environment variable or configuration
-                var connectionString = Environment.GetEnvironmentVariable("RPG_GAME_DB_CONNECTION_STRING", EnvironmentVariableTarget.Machine) ??
-                                       configuration.GetConnectionString("DefaultConnection");
+                // Get connection string from configuration only (temporarily disable env var)
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
 
                 if (string.IsNullOrEmpty(connectionString))
                 {
                     throw new InvalidOperationException(
                         "DefaultConnection string is required in configuration. " +
-                        "Please ensure your appsettings.json contains a valid PostgreSQL connection string.");
+                        "Please ensure your appsettings.json contains a valid SQL Server connection string.");
                 }
 
-                optionsBuilder.UseNpgsql(connectionString);
+                optionsBuilder.UseSqlServer(connectionString);
                 
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                 {

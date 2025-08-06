@@ -70,7 +70,7 @@ namespace RpgGame.Infrastructure.Services.Authentication
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while registering the user {Username}", username);
-                return new AuthenticationResult(false, "An error occurred while registering the user.");
+                return new AuthenticationResult(new OperationError("RegistrationError", "An error occurred while registering the user."));
             }
         }
 
@@ -80,14 +80,14 @@ namespace RpgGame.Infrastructure.Services.Authentication
 
             if (user == null)
             {
-                return new AuthenticationResult(false, "Invalid email or password");
+                return new AuthenticationResult(new OperationError("UserNotFound", "Invalid email or password"));
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: false);
 
             if (!result.Succeeded)
             {
-                return new AuthenticationResult(false, "Invalid email or password");
+                return new AuthenticationResult(new OperationError("InvalidCredentials", "Invalid email or password"));
             }
 
             return await GenerateAuthenticationResult(user);
@@ -100,13 +100,13 @@ namespace RpgGame.Infrastructure.Services.Authentication
 
             if (userId == null || !await _jwtTokenService.ValidateRefreshTokenAsync(refreshToken, userId))
             {
-                return new AuthenticationResult(false, "Invalid refresh token");
+                return new AuthenticationResult(new OperationError("InvalidRefreshToken", "Invalid refresh token"));
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new AuthenticationResult(false, "User not found");
+                return new AuthenticationResult(new OperationError("UserNotFound", "User not found"));
             }
 
             // Revoke old refresh token and generate new tokens

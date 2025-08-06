@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using RpgGame.WebApi.Validators;
 
 namespace RpgGame.WebApi.DTOs.Auth
 {
@@ -11,7 +12,7 @@ namespace RpgGame.WebApi.DTOs.Auth
         /// The email address of the user.
         /// </summary>
         [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+        [EnhancedEmail(ErrorMessage = "Please provide a valid email address with proper domain (e.g., user@example.com)")]
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
