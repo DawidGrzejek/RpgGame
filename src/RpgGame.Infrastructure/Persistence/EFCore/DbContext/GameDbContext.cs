@@ -70,29 +70,26 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
                     .AddEnvironmentVariables()
                     .Build();
 
-                // Get connection string from environment variable or configuration
-                var connectionString = Environment.GetEnvironmentVariable("RPG_GAME_DB_CONNECTION_STRING", EnvironmentVariableTarget.Machine) ??
-                                       configuration.GetConnectionString("DefaultConnection");
+                // Get connection string from configuration only (temporarily disable env var)
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
 
                 if (string.IsNullOrEmpty(connectionString))
                 {
                     throw new InvalidOperationException(
                         "DefaultConnection string is required in configuration. " +
-                        "Please ensure your appsettings.json contains a valid PostgreSQL connection string.");
+                        "Please ensure your appsettings.json contains a valid SQL Server connection string.");
                 }
 
-                optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
+                optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
                 {
-                    npgsqlOptions.EnableRetryOnFailure(
+                    sqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,
                         maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorCodesToAdd: null);
-                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    npgsqlOptions.CommandTimeout(60);
-                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "RpgGame");
-                })
-                .UseEnumCheckConstraints()
-                .UseSnakeCaseNamingConvention();
+                        errorNumbersToAdd: null);
+                    sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sqlOptions.CommandTimeout(60);
+                    sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "RpgGame");
+                });
                 
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                 {

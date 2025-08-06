@@ -31,11 +31,13 @@ namespace RpgGame.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register DbContext
-            services.AddDbContext<GameDbContext>();
+            // Register DbContext with SQL Server
+            services.AddDbContext<GameDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            // Add ASP.NET Core Identity services
-            services.AddDbContext<IdentityDataContext>();
+            // Add ASP.NET Core Identity services with SQL Server
+            services.AddDbContext<IdentityDataContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
             
             // Configure ASP.NET Core Identity
             services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -106,6 +108,7 @@ namespace RpgGame.Infrastructure
                 options.AddPolicy("Player", policy => policy.RequireRole("Player"));
                 options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
                 options.AddPolicy("Moderator", policy => policy.RequireRole("Admin", "Moderator"));
+                options.AddPolicy("GameMaster", policy => policy.RequireRole("GameMaster", "Admin"));
             });
 
             // Register UnitOfWork

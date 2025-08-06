@@ -1,8 +1,9 @@
-﻿using RpgGame.Application.Serialization.DTOs;
+using RpgGame.Application.Serialization.DTOs;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.Player;
 using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Inventory;
+using RpgGame.Domain.Enums;
+using RpgGame.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,80 +15,78 @@ namespace RpgGame.Application.Serialization.Mappers
 {
     public static class PlayerMapper
     {
-        public static PlayerCharacterDto ToDto(PlayerCharacter character)
+        public static PlayerCharacterDto ToDto(Character character)
         {
-            var stateEvent = character.ExportState() as PlayerStateExported;
-
-            if (stateEvent == null)
+            if (character.Type != CharacterType.Player)
             {
-                throw new InvalidOperationException("Failed to export player state.");
+                throw new InvalidOperationException("Character must be a player character.");
             }
+
+            var stateEvent = character.ExportState();
 
             return new PlayerCharacterDto
             {
                 Name = character.Name,
-                Health = character.Health,
-                MaxHealth = character.MaxHealth,
-                Level = character.Level,
-                Strength = character.Strength,
-                Defense = character.Defense,
+                Health = character.Stats.CurrentHealth,
+                MaxHealth = character.Stats.MaxHealth,
+                Level = character.Stats.Level,
+                Strength = character.Stats.Strength,
+                Defense = character.Stats.Defense,
                 Experience = character.Experience,
-                CharacterType = character.GetType().Name,
-                Inventory = InventoryMapper.ToDto(character.Inventory),
-                EquippedItems = stateEvent.EquippedItems.ToDictionary(
-                    kvp => kvp.Key.ToString(),
-                    kvp => (object)kvp.Value
-                ),
-                CriticalChance = (character as Rogue)?.CriticalChance,
-                Mana = (character as Mage)?.Mana,
-                MaxMana = (character as Mage)?.MaxMana
+                CharacterType = character.PlayerClass?.ToString() ?? "Unknown",
+                Inventory = null, // TODO: Implement inventory mapping for new system
+                EquippedItems = new Dictionary<string, object>(), // TODO: Implement equipment mapping
+                
+                // Type-specific properties from CustomData
+                CriticalChance = character.CustomData.TryGetValue("CriticalChance", out var crit) ? (double?)crit : null,
+                Mana = character.CustomData.TryGetValue("Mana", out var mana) ? (int?)mana : null,
+                MaxMana = character.CustomData.TryGetValue("MaxMana", out var maxMana) ? (int?)maxMana : null
             };
         }
 
-        public static PlayerCharacter FromDto(PlayerCharacterDto dto)
+        public static Character FromDto(PlayerCharacterDto dto)
         {
-            // Create inventory
-            IInventory inventory = InventoryMapper.FromDto(dto.Inventory);
-
-            // Create character based on type
-            PlayerCharacter character = null;
-
-            switch (dto.CharacterType)
+            // Parse player class from string
+            if (!Enum.TryParse<PlayerClass>(dto.CharacterType, out var playerClass))
             {
-                case "Rogue":
-                    character = Rogue.Create(dto.Name, inventory);
-                    break;
-                case "Mage":
-                    character = Mage.Create(dto.Name, inventory);
-                    break;
-                case "Warrior":
-                    character = Warrior.Create(dto.Name, inventory);
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported character type: {dto.CharacterType}");
+                throw new ArgumentException($"Unsupported character type: {dto.CharacterType}");
             }
 
-            // Set common properties using reflection
-            SetPrivateField(character, "_health", dto.Health);
-            SetPrivateField(character, "_maxHealth", dto.MaxHealth);
-            SetPrivateField(character, "_level", dto.Level);
-            SetPrivateField(character, "_strength", dto.Strength);
-            SetPrivateField(character, "_defense", dto.Defense);
-            SetPrivateField(character, "_experience", dto.Experience);
+            // Create base stats from DTO
+            var stats = new CharacterStats(
+                dto.Level,
+                dto.MaxHealth,
+                dto.Strength,
+                dto.Defense,
+                10, // Default speed - TODO: add to DTO if needed
+                5   // Default magic - TODO: add to DTO if needed
+            );
 
-            // Set type-specific properties
-            if (character is Rogue rogue && dto.CriticalChance.HasValue)
+            // Set current health
+            stats = stats with { CurrentHealth = dto.Health };
+
+            // Create character using our new factory methods
+            var character = Character.CreatePlayer(dto.Name, playerClass, stats);
+            
+            // Set experience directly (bypassing level-up checks since we're restoring state)
+            typeof(Character).GetField("Experience", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(character, dto.Experience);
+
+            // Add type-specific data to CustomData
+            if (dto.CriticalChance.HasValue)
             {
-                SetPrivateField(rogue, "_criticalChance", dto.CriticalChance.Value);
+                character.CustomData["CriticalChance"] = dto.CriticalChance.Value;
             }
-            else if (character is Mage mage && dto.Mana.HasValue && dto.MaxMana.HasValue)
+            if (dto.Mana.HasValue)
             {
-                SetPrivateField(mage, "_mana", dto.Mana.Value);
-                SetPrivateField(mage, "_maxMana", dto.MaxMana.Value);
+                character.CustomData["Mana"] = dto.Mana.Value;
+            }
+            if (dto.MaxMana.HasValue)
+            {
+                character.CustomData["MaxMana"] = dto.MaxMana.Value;
             }
 
-            // Handle equipped items (this would need further implementation)
-            // Code for restoring equipped items would go here
+            // TODO: Restore inventory and equipped items when inventory system is updated
 
             return character;
         }

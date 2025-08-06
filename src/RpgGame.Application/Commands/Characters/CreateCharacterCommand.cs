@@ -3,7 +3,6 @@ using MediatR;
 using RpgGame.Application.Events;
 using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.Player;
 using RpgGame.Domain.Enums;
 using System;
 using System.Threading;
@@ -14,7 +13,7 @@ namespace RpgGame.Application.Commands.Characters
     public class CreateCharacterCommand : ICommand<CommandResult<Character>>
     {
         public string Name { get; set; }
-        public CharacterType Type { get; set; }
+        public PlayerClass PlayerClass { get; set; }
     }
 
     public class CreateCharacterCommandValidator : AbstractValidator<CreateCharacterCommand>
@@ -26,8 +25,8 @@ namespace RpgGame.Application.Commands.Characters
                 .MinimumLength(3).WithMessage("Character name must be at least 3 characters long")
                 .MaximumLength(20).WithMessage("Character name cannot exceed 20 characters");
 
-            RuleFor(c => c.Type)
-                .IsInEnum().WithMessage("Invalid character type");
+            RuleFor(c => c.PlayerClass)
+                .IsInEnum().WithMessage("Invalid player class");
         }
     }
     public class CreateCharacterCommandHandler : IRequestHandler<CreateCharacterCommand, CommandResult<Character>>
@@ -47,13 +46,17 @@ namespace RpgGame.Application.Commands.Characters
         {
             try
             {
-                Character character = request.Type switch
-                {
-                    CharacterType.Warrior => Warrior.Create(request.Name),
-                    CharacterType.Mage => Mage.Create(request.Name),
-                    CharacterType.Rogue => Rogue.Create(request.Name),
-                    _ => throw new ArgumentException("Unsupported character type")
-                };
+                // Create base stats for the player class
+                var baseStats = new RpgGame.Domain.ValueObjects.CharacterStats(
+                    1, // Level
+                    100, // MaxHealth  
+                    10, // Strength
+                    8, // Defense
+                    12, // Speed
+                    5 // Magic
+                );
+
+                Character character = Character.CreatePlayer(request.Name, request.PlayerClass, baseStats);
 
                 // Store the character
                 await _characterRepository.AddAsync(character);
@@ -62,7 +65,7 @@ namespace RpgGame.Application.Commands.Characters
                 await _eventDispatcher.DispatchAsync(character.DomainEvents, cancellationToken);
                 character.ClearDomainEvents();
 
-                return CommandResult<Character>.Ok(character, $"{request.Type} character '{request.Name}' created successfully");
+                return CommandResult<Character>.Ok(character, $"{request.PlayerClass} character '{request.Name}' created successfully");
             }
             catch (Exception ex)
             {

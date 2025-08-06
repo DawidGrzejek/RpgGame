@@ -1,5 +1,4 @@
-﻿using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
+using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.World;
 using System;
 using System.Collections.Generic;
@@ -16,20 +15,20 @@ namespace RpgGame.Domain.Entities.World
     {
         public string Name { get; }
         public string Description { get; }
-        public IReadOnlyList<Enemy> PossibleEnemies => _possibleEnemies.AsReadOnly();
-        private readonly List<Enemy> _possibleEnemies;
+        public IReadOnlyList<Character> PossibleEnemies => _possibleEnemies.AsReadOnly();
+        private readonly List<Character> _possibleEnemies;
 
         public Location(string name, string description)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Description = description ?? throw new ArgumentNullException(nameof(description));
-            _possibleEnemies = new List<Enemy>();
+            _possibleEnemies = new List<Character>();
         }
 
         /// <summary>
         /// Adds an enemy type that can be encountered in this location
         /// </summary>
-        public void AddPossibleEnemy(Enemy enemy)
+        public void AddPossibleEnemy(Character enemy)
         {
             if (enemy != null)
             {
@@ -40,7 +39,7 @@ namespace RpgGame.Domain.Entities.World
         /// <summary>
         /// Returns a random enemy that can be encountered in this location
         /// </summary>
-        public Enemy GetRandomEnemy()
+        public Character GetRandomEnemy()
         {
             if (_possibleEnemies.Count == 0)
             {

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(setx:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(dotnet build)",
+      "Bash(find:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)"
+    ],
+    "deny": []
+  }
+}

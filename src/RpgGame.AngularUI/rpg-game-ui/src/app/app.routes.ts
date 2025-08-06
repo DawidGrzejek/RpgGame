@@ -17,6 +17,9 @@ import { ItemCreationComponent } from './components/item-creation/item-creation.
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 
+// Admin components
+import { UserManagementComponent } from './components/admin/user-management.component';
+
 export const routes: Routes = [
   // Public routes
   { path: '', component: HomeComponent },
@@ -86,10 +89,7 @@ export const routes: Routes = [
       { path: 'enemies/:id/edit', component: EnemyCreationComponent },
       { path: 'items/new', component: ItemCreationComponent },
       { path: 'items/:id/edit', component: ItemCreationComponent },
-      // {
-      //   path: 'users',
-      //   loadComponent: () => import('./components/admin/user-management/user-management.component').then(c => c.UserManagementComponent)
-      // },
+      { path: 'users', component: UserManagementComponent },
       // {
       //   path: 'analytics',
       //   loadComponent: () => import('./components/admin/analytics/analytics.component').then(c => c.AnalyticsComponent)

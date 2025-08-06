@@ -11,7 +11,7 @@ namespace RpgGame.Application.Interfaces.Services
 {
     public interface ICharacterService
     {
-        Task<OperationResult<Character>> CreateCharacterAsync(string name, CharacterType type);
+        Task<OperationResult<Character>> CreateCharacterAsync(string name, PlayerClass playerClass);
         Task<OperationResult> LevelUpCharacterAsync(Guid characterId);
     }
 }

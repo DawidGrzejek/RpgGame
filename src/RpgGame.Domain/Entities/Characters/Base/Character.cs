@@ -1,73 +1,103 @@
-﻿using System;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using RpgGame.Domain.Base;
-using RpgGame.Domain.Entities.Characters.Player;
 using RpgGame.Domain.Enums;
-using RpgGame.Domain.Events.Base;
+using RpgGame.Domain.ValueObjects;
+using RpgGame.Domain.Entities.Configuration;
 using RpgGame.Domain.Events.Characters;
 using RpgGame.Domain.Interfaces.Characters;
 
 namespace RpgGame.Domain.Entities.Characters.Base
 {
     /// <summary>
-    /// Base abstract class for all characters in the game
+    /// Single character entity that uses composition instead of inheritance
+    /// This replaces the complex inheritance hierarchy with template-driven design
     /// </summary>
-    public abstract class Character : DomainEntity, ICharacter
+    public class Character : DomainEntity, ICharacter, IPlayerCharacter
     {
+        // Core character properties
+        public string Name { get; private set; }
+        public CharacterType Type { get; private set; } // Player or NPC
+        public CharacterStats Stats { get; private set; } // Record type for immutable stats
+        public bool IsAlive => Stats.CurrentHealth > 0;
+        
+        // Template reference for configuration
+        public Guid? TemplateId { get; private set; }
+        
+        // Character-specific data
+        public Dictionary<string, object> CustomData { get; private set; }
+        public List<Guid> Abilities { get; private set; }
+        public List<Guid> InventoryIds { get; private set; } // Item IDs for template system
+        
+        // Inventory system for IPlayerCharacter interface
+        private Entities.Inventory.Inventory _inventory;
+        public Interfaces.Inventory.IInventory Inventory => _inventory ??= Entities.Inventory.Inventory.Create(50); // Default 50 capacity
 
-        // Protected fields - encapsulated implementation details
-        protected string _name;
-        protected int _health;
-        protected int _maxHealth;
-        protected int _level;
-        protected int _strength;
-        protected int _defense;
+        // For player characters
+        public PlayerClass? PlayerClass { get; private set; } 
+        public int Experience { get; private set; }
+        public int ExperienceToNextLevel => (Stats.Level * 1000) - Experience; // Level * 1000 is requirement for next level
+        
+        // For NPCs
+        public NPCBehavior? NPCBehavior { get; private set; }
 
-        // Properties - providing a controlled interface
-        public string Name => _name;
-        public int Health => _health;
-        public int MaxHealth => _maxHealth;
-        public int Level => _level;
-        public bool IsAlive => _health > 0;
-        public int Strength => _strength;  // Additional properties that may be used by derived classes
-        public int Defense => _defense;
+        // Compatibility properties for existing interfaces
+        public int Health => Stats.CurrentHealth;
+        public int MaxHealth => Stats.MaxHealth;
+        public int Level => Stats.Level;
+        public int Strength => Stats.Strength;
+        public int Defense => Stats.Defense;
 
-        /// <summary>
-        /// Base constructor for all character types
-        /// </summary>
-        protected Character(string name, int health, int strength, int defense, int level = 1)
+        // Private constructor for EF Core
+        private Character() 
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Character name cannot be empty", nameof(name));
-
-            if (health <= 0)
-                throw new ArgumentException("Health must be greater than zero", nameof(health));
-
-            _name = name;
-            _maxHealth = health;
-            _health = health;
-            _strength = strength;
-            _defense = defense;
-            _level = level;
+            CustomData = new Dictionary<string, object>();
+            Abilities = new List<Guid>();
+            InventoryIds = new List<Guid>();
         }
 
-        /// <summary>
-        /// Protected constructor for event sourcing
-        /// </summary>
-        protected Character(bool forEventSourcing)
+        // Factory methods
+        public static Character CreatePlayer(
+            string name, 
+            PlayerClass playerClass,
+            CharacterStats baseStats)
         {
-            // Minimal initialization, will be overridden by Apply methods
-            _name = "";
-            _maxHealth = 1;
-            _health = 1;
-            _level = 1;
-            _strength = 1;
-            _defense = 1;
+            return new Character
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Type = CharacterType.Player,
+                PlayerClass = playerClass,
+                Stats = baseStats,
+                CustomData = new Dictionary<string, object>(),
+                Abilities = new List<Guid>(),
+                InventoryIds = new List<Guid>(),
+                Experience = 0
+            };
         }
 
-        /// <summary>
-        /// Performs a basic attack on the target
-        /// </summary>
+        public static Character CreateNPC(
+            string name,
+            NPCBehavior behavior,
+            CharacterStats stats,
+            Guid? templateId = null)
+        {
+            return new Character
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Type = CharacterType.NPC,
+                NPCBehavior = behavior,
+                Stats = stats,
+                TemplateId = templateId,
+                CustomData = new Dictionary<string, object>(),
+                Abilities = new List<Guid>(),
+                InventoryIds = new List<Guid>()
+            };
+        }
+
+        // Core behaviors - maintaining compatibility with existing interface
         public virtual void Attack(ICharacter target)
         {
             if (target == null)
@@ -75,39 +105,31 @@ namespace RpgGame.Domain.Entities.Characters.Base
 
             if (!IsAlive)
             {
-                OnAttackFailed("Cannot attack while defeated");
+                Console.WriteLine($"{Name} cannot attack while defeated");
                 return;
             }
 
             int damage = CalculateDamage();
-            OnBeforeAttack(target, damage);
+            Console.WriteLine($"{Name} attacks {target.Name} for {damage} damage!");
             target.TakeDamage(damage);
-            OnAfterAttack(target, damage);
         }
 
-        /// <summary>
-        /// Takes damage from an attack
-        /// </summary>
         public virtual void TakeDamage(int damage)
         {
             if (damage < 0)
                 throw new ArgumentException("Damage cannot be negative", nameof(damage));
 
-            // Apply defense to reduce incoming damage
-            int actualDamage = Math.Max(1, damage - _defense);
-            _health = Math.Max(0, _health - actualDamage);
-
-            OnDamageTaken(actualDamage);
-
+            var actualDamage = Math.Max(1, damage - Stats.Defense);
+            Stats = Stats.WithHealth(Math.Max(0, Stats.CurrentHealth - actualDamage));
+            
+            Console.WriteLine($"{Name} takes {actualDamage} damage. Health: {Stats.CurrentHealth}/{Stats.MaxHealth}");
+            
             if (!IsAlive)
             {
                 OnDeath();
             }
         }
 
-        /// <summary>
-        /// Heals the character for the specified amount
-        /// </summary>
         public virtual void Heal(int amount)
         {
             if (amount < 0)
@@ -115,36 +137,25 @@ namespace RpgGame.Domain.Entities.Characters.Base
 
             if (!IsAlive)
             {
-                OnHealFailed("Cannot heal while defeated");
+                Console.WriteLine($"{Name} cannot be healed while defeated");
                 return;
             }
-
-            int healthBefore = _health;
-            _health = Math.Min(_maxHealth, _health + amount);
-            int actualHeal = _health - healthBefore;
-
-            OnHealed(actualHeal);
+            
+            var newHealth = Math.Min(Stats.MaxHealth, Stats.CurrentHealth + amount);
+            var actualHeal = newHealth - Stats.CurrentHealth;
+            Stats = Stats.WithHealth(newHealth);
+            
+            Console.WriteLine($"{Name} heals for {actualHeal} health. Health: {Stats.CurrentHealth}/{Stats.MaxHealth}");
         }
 
-        /// <summary>
-        /// Increases the character's level and improves their stats
-        /// </summary>
         public virtual void LevelUp()
         {
-            int oldLevel = _level;
-            _level++;
-
-            // Base stat improvements
-            int healthIncrease = 10;
-            int strengthIncrease = 2;
-            int defenseIncrease = 1;
-
-            _maxHealth += healthIncrease;
-            _health = _maxHealth; // Full heal on level up
-            _strength += strengthIncrease;
-            _defense += defenseIncrease;
-
-            OnLevelUp(healthIncrease, strengthIncrease, defenseIncrease);
+            int oldLevel = Stats.Level;
+            Stats = Stats.LevelUp();
+            Experience = 0; // Reset XP for next level
+            
+            Console.WriteLine($"{Name} leveled up to level {Stats.Level}!");
+            Console.WriteLine($"New stats: Health: {Stats.CurrentHealth}/{Stats.MaxHealth}, Strength: {Stats.Strength}, Defense: {Stats.Defense}");
 
             // Raise domain event
             RaiseDomainEvent((id, version) => new CharacterLeveledUp(
@@ -152,92 +163,75 @@ namespace RpgGame.Domain.Entities.Characters.Base
                 version,
                 Name,
                 oldLevel,
-                _level,
-                healthIncrease,
-                strengthIncrease,
-                defenseIncrease
+                Stats.Level,
+                10, // Health increase from stats
+                2,  // Strength increase from stats  
+                1   // Defense increase from stats
             ));
         }
 
-        // Protected methods (encapsulated implementation)
-
-        /// <summary>
-        /// Calculates the damage for an attack
-        /// </summary>
-        protected virtual int CalculateDamage()
+        // New methods
+        public void AddAbility(Guid abilityId)
         {
-            // Base damage calculation with some randomness
-            Random rnd = new Random();
-            return _strength + rnd.Next(1, 6);
+            if (!Abilities.Contains(abilityId))
+            {
+                Abilities.Add(abilityId);
+            }
+        }
+        
+        // IPlayerCharacter interface methods
+        public void EquipItem(Interfaces.Items.IEquipment item)
+        {
+            if (Type != CharacterType.Player)
+                throw new InvalidOperationException("Only players can equip items");
+            
+            // TODO: Implement equipment system
+            // For now, just add to inventory
+            Inventory.AddItem(item);
+        }
+        
+        public void UseItem(Interfaces.Items.IItem item)
+        {
+            if (Type != CharacterType.Player)
+                throw new InvalidOperationException("Only players can use items");
+                
+            // TODO: Implement item usage system
+            // For now, just remove from inventory
+            Inventory.RemoveItem(item);
+        }
+        
+        public void UseSpecialAbility(ICharacter target)
+        {
+            if (Type != CharacterType.Player)
+                throw new InvalidOperationException("Only players can use special abilities");
+                
+            // TODO: Implement special ability system based on PlayerClass
+            // For now, just a placeholder
+            Console.WriteLine($"{Name} uses a special ability on {target.Name}!");
         }
 
-        // Protected event methods for derived classes to override
-
-        /// <summary>
-        /// Called before an attack is executed
-        /// </summary>
-        protected virtual void OnBeforeAttack(ICharacter target, int damage)
+        public void GainExperience(int xp)
         {
-            Console.WriteLine($"{Name} attacks {target.Name} for {damage} damage!");
+            if (Type != CharacterType.Player) return;
+            
+            Experience += xp;
+            CheckForLevelUp();
         }
 
-        /// <summary>
-        /// Called after an attack is executed
-        /// </summary>
-        protected virtual void OnAfterAttack(ICharacter target, int damage)
+        private void CheckForLevelUp()
         {
-            // Default implementation does nothing
+            var requiredXp = Stats.Level * 1000; // Simple XP calculation
+            if (Experience >= requiredXp)
+            {
+                LevelUp();
+            }
         }
 
-        /// <summary>
-        /// Called when an attack fails
-        /// </summary>
-        protected virtual void OnAttackFailed(string reason)
-        {
-            Console.WriteLine($"{Name} cannot attack: {reason}");
-        }
-
-        /// <summary>
-        /// Called when the character takes damage
-        /// </summary>
-        protected virtual void OnDamageTaken(int damage)
-        {
-            Console.WriteLine($"{Name} takes {damage} damage. Health: {_health}/{_maxHealth}");
-        }
-
-        /// <summary>
-        /// Called when the character is healed
-        /// </summary>
-        protected virtual void OnHealed(int amount)
-        {
-            Console.WriteLine($"{Name} heals for {amount} health. Health: {_health}/{_maxHealth}");
-        }
-
-        /// <summary>
-        /// Called when healing fails
-        /// </summary>
-        protected virtual void OnHealFailed(string reason)
-        {
-            Console.WriteLine($"{Name} cannot be healed: {reason}");
-        }
-
-        /// <summary>
-        /// Called when the character levels up
-        /// </summary>
-        protected virtual void OnLevelUp(int healthIncrease, int strengthIncrease, int defenseIncrease)
-        {
-            Console.WriteLine($"{Name} leveled up to level {_level}!");
-            Console.WriteLine($"New stats: Health: {_health}/{_maxHealth}, Strength: {_strength}, Defense: {_defense}");
-        }
-
-        /// <summary>
-        /// Called when the character dies
-        /// </summary>
-        protected virtual void OnDeath()
+        private void OnDeath()
         {
             Console.WriteLine($"{Name} has been defeated!");
 
-            // Raise domain event with location info
+            // Raise domain event
             RaiseDomainEvent((id, version) => new CharacterDied(
                 id,
                 version,
@@ -247,104 +241,111 @@ namespace RpgGame.Domain.Entities.Characters.Base
             ));
         }
 
-        /// <summary>
-        /// Exports the current state of the character as a domain event
-        /// </summary>
-        /// <returns></returns>
+        // Template application
+        public void ApplyTemplate(CharacterTemplate template)
+        {
+            TemplateId = template.Id;
+            
+            // Apply template data
+            foreach (var data in template.ConfigurationData)
+            {
+                CustomData[data.Key] = data.Value;
+            }
+            
+            // Apply template abilities
+            foreach (var abilityId in template.AbilityIds)
+            {
+                AddAbility(abilityId);
+            }
+        }
+
+        // Compatibility methods
+        protected virtual int CalculateDamage()
+        {
+            Random rnd = new Random();
+            return Stats.Strength + rnd.Next(1, 6);
+        }
+
         public virtual CharacterStateExported ExportState()
         {
             return new CharacterStateExported(
-                Id, // Assuming Id is inherited from DomainEntity
-                Version, // Assuming Version is inherited from DomainEntity
+                Id,
+                Version,
                 Name,
                 Health,
                 MaxHealth,
                 Level,
                 Strength,
                 Defense,
-                IsAlive ? 1 : 0, // Pass the 'isAlive' parameter as required
+                IsAlive ? 1 : 0,
                 GetType().Name
             );
         }
 
-        // Apply methods for event sourcing
-        protected virtual void Apply(CharacterLeveledUp @event)
+        // Event sourcing method - reconstruct character from events
+        public static Character FromEvents(Guid id, System.Collections.Generic.IEnumerable<RpgGame.Domain.Events.Base.IDomainEvent> events)
         {
-            _name = @event.CharacterName;
-            _level = @event.NewLevel;
-            // You may need to calculate health, strength, etc. based on level
-            _maxHealth = 100 + (@event.NewLevel * 10);
-            _health = _maxHealth;
-            _strength = 10 + (@event.NewLevel * 2);
-            _defense = 5 + (@event.NewLevel);
-        }
+            if (events == null || !events.Any())
+                throw new ArgumentException("Cannot reconstruct character without events");
 
-        protected virtual void Apply(CharacterDied @event)
-        {
-            _name = @event.CharacterName;
-            _level = @event.Level;
-            _health = 0;
-        }
+            Character character = null;
 
-        /// <summary>
-        /// Factory method to create the correct subtype from events
-        /// </summary>
-        public static Character FromEvents(Guid id, IEnumerable<IDomainEvent> events)
-        {
-            if (!events.Any())
-                return null;
-
-            // Find character creation event
-            var creationEvent = events.OfType<CharacterCreatedEvent>().FirstOrDefault();
-            if (creationEvent == null)
-                throw new InvalidOperationException("Character creation event not found");
-
-            // Create the right subtype
-            Character character = creationEvent.CharacterType switch
+            foreach (var @event in events.OrderBy(e => e.Version))
             {
-                CharacterType.Warrior => Warrior.CreateForEventSourcing(),
-                CharacterType.Mage => Mage.CreateForEventSourcing(),
-                CharacterType.Rogue => Rogue.CreateForEventSourcing(),
-                _ => throw new InvalidOperationException($"Unknown character type: {creationEvent.CharacterType}")
-            };
-
-            // Set ID
-            typeof(DomainEntity).GetProperty("Id")?.SetValue(character, id);
-
-            // Apply events in order
-            foreach (var @event in events.OrderBy(e => e.OccurredAt))
-            {
-                ApplyEventToCharacter(character, @event);
-            }
-
-            return character;
-        }
-
-        private static string GetCharacterTypeFromEvents(IEnumerable<IDomainEvent> events)
-        {
-            // Find character type in events
-            foreach (var @event in events)
-            {
-                if (@event is CharacterCreatedEvent createdEvent)
+                switch (@event)
                 {
-                    return createdEvent.CharacterType.ToString();
+                    case Events.Characters.CharacterCreatedEvent created:
+                        // Create the character based on the creation event
+                        var baseStats = new CharacterStats(1, 100, 10, 8, 12, 5); // Default stats
+                        
+                        if (created.CharacterType == CharacterType.Player)
+                        {
+                            // For players, we need to determine the class from other events or use default
+                            character = Character.CreatePlayer(created.Name, PlayerClass.Warrior, baseStats);
+                        }
+                        else
+                        {
+                            // For NPCs, use default behavior
+                            character = Character.CreateNPC(created.Name, NPCBehavior.Passive, baseStats);
+                        }
+                        
+                        // Set the reconstructed ID and version
+                        character.Id = created.AggregateId;
+                        character.Version = created.Version;
+                        break;
+
+                    case Events.Characters.PlayerGainedExperience expEvent:
+                        if (character != null)
+                        {
+                            character.Experience = expEvent.NewExperience;
+                        }
+                        break;
+
+                    case Events.Characters.CharacterLeveledUp levelEvent:
+                        if (character != null)
+                        {
+                            character.Stats = character.Stats.LevelUp();
+                        }
+                        break;
+
+                    case Events.Characters.CharacterDied deathEvent:
+                        if (character != null)
+                        {
+                            character.Stats = character.Stats.WithHealth(0);
+                        }
+                        break;
+
+                    // Handle other events as needed
+                    default:
+                        // Ignore unknown events or log them
+                        break;
                 }
             }
 
-            throw new InvalidOperationException("Could not determine character type from events");
-        }
+            if (character == null)
+                throw new InvalidOperationException("Could not reconstruct character from events - no creation event found");
 
-        private static void ApplyEventToCharacter(Character character, IDomainEvent @event)
-        {
-            var eventType = @event.GetType();
-            var method = character.GetType().GetMethod("Apply",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null, new[] { eventType }, null);
-
-            if (method != null)
-            {
-                method.Invoke(character, new object[] { @event });
-            }
+            return character;
         }
     }
 }

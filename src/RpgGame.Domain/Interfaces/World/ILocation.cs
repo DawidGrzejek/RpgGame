@@ -1,5 +1,4 @@
-﻿using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
+using RpgGame.Domain.Entities.Characters.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +14,9 @@ namespace RpgGame.Domain.Interfaces.World
     {
         string Name { get; }
         string Description { get; }
-        IReadOnlyList<Enemy> PossibleEnemies { get; }
+        IReadOnlyList<Character> PossibleEnemies { get; }
 
-        void AddPossibleEnemy(Enemy enemy);
-        Enemy GetRandomEnemy();
+        void AddPossibleEnemy(Character enemy);
+        Character GetRandomEnemy();
     }
 }

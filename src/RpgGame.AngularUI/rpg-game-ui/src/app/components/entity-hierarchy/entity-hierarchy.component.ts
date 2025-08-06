@@ -6,10 +6,10 @@ import { EnemyTemplate, ItemTemplate } from '../../models/entity-template.model'
 
 interface EntityHierarchy {
   enemies: {
-    [key: string]: EnemyTemplate[]
+    [key: string]: EnemyTemplate[] | undefined
   };
   items: {
-    [key: string]: ItemTemplate[]
+    [key: string]: ItemTemplate[] | undefined
   };
 }
 @Component({

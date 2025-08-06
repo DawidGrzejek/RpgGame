@@ -1,4 +1,5 @@
 ﻿/*using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RpgGame.Application.Commands.Game;
 using RpgGame.Domain.Interfaces.World;
@@ -7,6 +8,7 @@ using RpgGame.WebApi.DTOs.Requests;
 namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "GameMaster")]
     [Route("api/v{version:apiVersion}/game")]
     public class GameController : Controller
     {

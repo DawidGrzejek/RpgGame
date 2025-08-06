@@ -6,7 +6,6 @@ using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Application.Interfaces.Services;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using RpgGame.Domain.Enums;
 using RpgGame.Domain.Interfaces.Items;
 using RpgGame.Domain.Interfaces.World;
@@ -78,9 +77,9 @@ namespace RpgGame.Application.Handlers.Events.Character
                 };
 
                 // 4. Handle player character death differently than NPC death
-                if (request.IsPlayerCharacter && character is PlayerCharacter playerCharacter)
+                if (request.IsPlayerCharacter && character.Type == CharacterType.Player)
                 {
-                    await ProcessPlayerDeath(playerCharacter, request, result, cancellationToken);
+                    await ProcessPlayerDeath(character, request, result, cancellationToken);
                 }
                 else
                 {
@@ -114,7 +113,7 @@ namespace RpgGame.Application.Handlers.Events.Character
         }
 
         private async Task ProcessPlayerDeath(
-            PlayerCharacter player,
+            RpgGame.Domain.Entities.Characters.Base.Character player,
             ProcessCharacterDeathCommand request,
             CharacterDeathResult result,
             CancellationToken cancellationToken)
@@ -178,7 +177,7 @@ namespace RpgGame.Application.Handlers.Events.Character
             // This would require updating the location state
         }
 
-        private bool DetermineGameOver(PlayerCharacter player, ProcessCharacterDeathCommand request)
+        private bool DetermineGameOver(RpgGame.Domain.Entities.Characters.Base.Character player, ProcessCharacterDeathCommand request)
         {
             // In hardcore mode, death is permanent
             // In normal mode, players can respawn
@@ -211,7 +210,7 @@ namespace RpgGame.Application.Handlers.Events.Character
         }
 
         private async Task ApplyDeathPenalties(
-            PlayerCharacter player,
+            RpgGame.Domain.Entities.Characters.Base.Character player,
             CharacterDeathResult result,
             CancellationToken cancellationToken)
         {
@@ -236,7 +235,7 @@ namespace RpgGame.Application.Handlers.Events.Character
         }
 
         private async Task HandlePlayerInventoryOnDeath(
-            PlayerCharacter player,
+            RpgGame.Domain.Entities.Characters.Base.Character player,
             CharacterDeathResult result,
             CancellationToken cancellationToken)
         {

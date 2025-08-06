@@ -11,6 +11,7 @@ using RpgGame.WebApi.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
+using RpgGame.Infrastructure.Services;
 
 NLog.LogManager.Setup().LoadConfigurationFromAppSettings();
 var logger = NLog.LogManager.GetCurrentClassLogger();
@@ -31,6 +32,11 @@ try
     builder.Services.AddControllers(options =>
     {
         options.Filters.Add<ApiExceptionFilter>();
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Suppress automatic model validation to handle it manually in controllers
+        options.SuppressModelStateInvalidFilter = true;
     })
     .AddJsonOptions(options =>
     {
@@ -96,6 +102,20 @@ try
     // ...existing code...
 
     var app = builder.Build();
+    
+    // Seed database with default data in development
+    if (app.Environment.IsDevelopment())
+    {
+        try
+        {
+            await DatabaseSeeder.SeedAsync(app.Services);
+            logger.Info("Database seeding completed successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "Database seeding failed");
+        }
+    }
     
     // Check DI registrations for ICharacterService and CharacterService
     using (var scope = app.Services.CreateScope())

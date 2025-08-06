@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RpgGame.Application.Commands.EntityTemplates;
 using RpgGame.Application.Queries.EntityTemplates;
@@ -13,6 +14,7 @@ using RpgGame.WebApi.DTOs.Responses;
 namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "GameMaster")]
     [Route("api/v1/item-templates")]
     public class ItemTemplatesController : ControllerBase
     {

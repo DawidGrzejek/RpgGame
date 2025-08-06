@@ -29,12 +29,12 @@ namespace RpgGame.Infrastructure.Persistence.EFCore.Configurations
 
             builder.Property(e => e.EventData)
                 .IsRequired()
-                .HasColumnType("jsonb"); // Use JSONB for efficient storage of event data
+                .HasColumnType("nvarchar(max)"); // Use nvarchar(max) for JSON storage in SQL Server
 
             builder.Property(e => e.Timestamp)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP"); // Use database default for timestamp
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()"); // Use SQL Server default for timestamp
 
             builder.Property(e => e.Version)
                 .IsRequired();

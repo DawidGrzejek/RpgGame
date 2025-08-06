@@ -18,18 +18,18 @@ namespace RpgGame.Infrastructure.Persistence.EFCore.Configurations
 
             builder.Property(g => g.CreatedAt)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP"); // Use database default for created timestamp
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()"); // Use SQL Server default for created timestamp
 
             builder.Property(g => g.UpdatedAt)
                 .IsRequired()
-                .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP"); // Use database default for last modified timestamp
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()"); // Use SQL Server default for last modified timestamp
                 
             // Configure JSON serialization for complex objects
             builder.Property(g => g.PlayerCharacterJson)
                 .HasColumnName("player_character_json")
-                .HasColumnType("jsonb");
+                .HasColumnType("nvarchar(max)"); // Use nvarchar(max) for JSON in SQL Server
 
             builder.HasIndex(g => g.SaveName)
                 .IsUnique();

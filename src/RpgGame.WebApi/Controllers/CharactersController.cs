@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RpgGame.Application.Commands;
 using RpgGame.Application.Commands.Characters;
@@ -18,6 +19,7 @@ namespace RpgGame.WebApi.Controllers
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
+    [Authorize(Policy = "GameMaster")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class CharactersController : ControllerBase
     {

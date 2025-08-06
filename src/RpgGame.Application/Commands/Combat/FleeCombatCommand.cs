@@ -5,7 +5,6 @@ using RpgGame.Application.Commands.Results;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,7 +56,7 @@ namespace RpgGame.Application.Commands.Combat
             try
             {
                 var character = await _eventSourcingService.GetByIdAsync<Character>(request.CharacterId);
-                var enemy = await _eventSourcingService.GetByIdAsync<Enemy>(request.EnemyId);
+                var enemy = await _eventSourcingService.GetByIdAsync<Character>(request.EnemyId);
 
                 if (character == null)
                     return OperationResult<FleeResult>.NotFound("Character", request.CharacterId.ToString());
@@ -97,8 +96,8 @@ namespace RpgGame.Application.Commands.Combat
                     {
                         PlayerDamage = 0,
                         EnemyDamage = damage,
-                        PlayerHealth = character.Health,
-                        EnemyHealth = enemy.Health,
+                        PlayerHealth = character.Stats.CurrentHealth,
+                        EnemyHealth = enemy.Stats.CurrentHealth,
                         EnemyDefeated = false,
                         PlayerDefeated = !character.IsAlive,
                         ExperienceGained = 0,
@@ -121,17 +120,17 @@ namespace RpgGame.Application.Commands.Combat
             }
         }
 
-        private double CalculateFleeChance(Character character, Enemy enemy)
+        private double CalculateFleeChance(Character character, Character enemy)
         {
             // Base flee chance
             double baseChance = 0.7; // 70% base chance
 
             // Modify based on level difference
-            int levelDifference = character.Level - enemy.Level;
+            int levelDifference = character.Stats.Level - enemy.Stats.Level;
             double levelModifier = levelDifference * 0.05; // +/-5% per level difference
 
             // Modify based on health percentage
-            double healthPercent = (double)character.Health / character.MaxHealth;
+            double healthPercent = (double)character.Stats.CurrentHealth / character.Stats.MaxHealth;
             double healthModifier = (1 - healthPercent) * 0.2; // Up to +20% when near death
 
             // Calculate final chance
@@ -141,11 +140,11 @@ namespace RpgGame.Application.Commands.Combat
             return Math.Max(0.1, Math.Min(0.95, finalChance));
         }
 
-        private int CalculateEnemyDamage(Enemy enemy, Character target)
+        private int CalculateEnemyDamage(Character enemy, Character target)
         {
             // Simple damage calculation for enemy counter-attack
-            var baseDamage = enemy.Strength;
-            var defense = target.Defense;
+            var baseDamage = enemy.Stats.Strength;
+            var defense = target.Stats.Defense;
             var randomFactor = new Random().Next(1, 4); // Slightly less random damage for counter-attack
 
             var damage = Math.Max(1, baseDamage + randomFactor - defense);

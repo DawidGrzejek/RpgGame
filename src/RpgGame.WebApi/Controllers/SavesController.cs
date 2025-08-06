@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RpgGame.Application.Interfaces.Services;
 using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Interfaces.World;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
+    [Authorize(Policy = "GameMaster")]
     [Route("api/v1/[controller]")]
     public class SavesController : ControllerBase
     {

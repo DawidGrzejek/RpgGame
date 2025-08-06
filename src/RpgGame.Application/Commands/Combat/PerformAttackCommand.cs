@@ -5,7 +5,6 @@ using RpgGame.Application.Commands.Results;
 using RpgGame.Application.Events;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,8 +71,8 @@ namespace RpgGame.Application.Commands.Combat
                     return OperationResult<CombatResult>.BusinessRuleViolation("DeadDefender", "Cannot attack dead characters");
 
                 // Perform the attack
-                var attackerHealthBefore = attacker.Health;
-                var defenderHealthBefore = defender.Health;
+                var attackerHealthBefore = attacker.Stats.CurrentHealth;
+                var defenderHealthBefore = defender.Stats.CurrentHealth;
 
                 // Calculate damage (this would be more complex in a real game)
                 var attackerDamage = CalculateDamage(attacker, defender);
@@ -86,29 +85,26 @@ namespace RpgGame.Application.Commands.Combat
                 int experienceGained = 0;
                 var itemsDropped = new List<string>();
 
-                if (defenderDefeated && defender is Enemy enemy)
+                if (defenderDefeated && defender.Type == RpgGame.Domain.Enums.CharacterType.NPC)
                 {
-                    experienceGained = enemy.ExperienceReward;
+                    // TODO: Calculate experience based on enemy template or level
+                    experienceGained = defender.Stats.Level * 10;
 
                     // Award experience to attacker if it's a player
-                    if (attacker is PlayerCharacter playerAttacker)
+                    if (attacker.Type == RpgGame.Domain.Enums.CharacterType.Player)
                     {
-                        playerAttacker.GainExperience(experienceGained);
+                        attacker.GainExperience(experienceGained);
                     }
 
-                    // Handle loot drops
-                    var droppedItem = enemy.DropLoot();
-                    if (droppedItem != null)
-                    {
-                        itemsDropped.Add(droppedItem.Name);
-                    }
+                    // TODO: Handle loot drops based on enemy template
+                    // This would need to be implemented with the new template system
                 }
 
-                // Defender counter-attacks if still alive and is not a player
+                // Defender counter-attacks if still alive and is an NPC
                 int defenderDamage = 0;
                 bool attackerDefeated = false;
 
-                if (!defenderDefeated && defender is Enemy enemyDefender)
+                if (!defenderDefeated && defender.Type == RpgGame.Domain.Enums.CharacterType.NPC)
                 {
                     defenderDamage = CalculateDamage(defender, attacker);
                     attacker.TakeDamage(defenderDamage);
@@ -124,8 +120,8 @@ namespace RpgGame.Application.Commands.Combat
                 {
                     PlayerDamage = attackerDamage,
                     EnemyDamage = defenderDamage,
-                    PlayerHealth = attacker.Health,
-                    EnemyHealth = defender.Health,
+                    PlayerHealth = attacker.Stats.CurrentHealth,
+                    EnemyHealth = defender.Stats.CurrentHealth,
                     EnemyDefeated = defenderDefeated,
                     PlayerDefeated = attackerDefeated,
                     ExperienceGained = experienceGained,
@@ -148,8 +144,8 @@ namespace RpgGame.Application.Commands.Combat
         private int CalculateDamage(Character attacker, Character defender)
         {
             // Simple damage calculation - you can make this more complex
-            var baseDamage = attacker.Strength;
-            var defense = defender.Defense;
+            var baseDamage = attacker.Stats.Strength;
+            var defense = defender.Stats.Defense;
             var randomFactor = new Random().Next(1, 6); // 1-5 random damage
 
             var damage = Math.Max(1, baseDamage + randomFactor - defense);

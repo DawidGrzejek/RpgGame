@@ -2,7 +2,6 @@
 using RpgGame.Application.Interfaces.Services;
 using RpgGame.Domain.Common;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.Player;
 using RpgGame.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace RpgGame.Application.Services
             _characterRepository = characterRepository ?? throw new ArgumentNullException(nameof(characterRepository));
         }
 
-        public async Task<OperationResult<Character>> CreateCharacterAsync(string name, CharacterType type)
+        public async Task<OperationResult<Character>> CreateCharacterAsync(string name, PlayerClass playerClass)
         {
             // Validation
             if (string.IsNullOrWhiteSpace(name))
@@ -32,14 +31,18 @@ namespace RpgGame.Application.Services
 
             try
             {
-                // Create character
-                Character character = type switch
-                {
-                    CharacterType.Warrior => Warrior.Create(name),
-                    CharacterType.Mage => Mage.Create(name),
-                    CharacterType.Rogue => Rogue.Create(name),
-                    _ => throw new ArgumentException("Invalid character type")
-                };
+                // Create base stats for the player class
+                var baseStats = new RpgGame.Domain.ValueObjects.CharacterStats(
+                    1, // Level
+                    100, // MaxHealth  
+                    10, // Strength
+                    8, // Defense
+                    12, // Speed
+                    5 // Magic
+                );
+
+                // Create character using the new system
+                Character character = Character.CreatePlayer(name, playerClass, baseStats);
 
                 // Save to repository
                 var saveResult = await _characterRepository.AddAsync(character);
