@@ -130,7 +130,7 @@ namespace RpgGame.UnitTests.Domain.Entities
             var value = "High";
 
             // Act
-            template.AddConfigurationData(key, value);
+            template.AddConfiguration(key, value);
 
             // Assert
             Assert.True(template.ConfigurationData.ContainsKey(key));
@@ -144,11 +144,11 @@ namespace RpgGame.UnitTests.Domain.Entities
             var template = CharacterTemplate.CreateNPCTemplate(
                 "Test NPC", "Description", CreateDefaultStats(), new List<Guid>());
             var key = "AggressionLevel";
-            template.AddConfigurationData(key, "High");
+            template.AddConfiguration(key, "High");
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => 
-                template.AddConfigurationData(key, "Low"));
+                template.AddConfiguration(key, "Low"));
         }
 
         [Theory]
@@ -163,7 +163,7 @@ namespace RpgGame.UnitTests.Domain.Entities
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => 
-                template.AddConfigurationData(invalidKey, "Value"));
+                template.AddConfiguration(invalidKey, "Value"));
         }
 
         [Fact]
@@ -173,10 +173,10 @@ namespace RpgGame.UnitTests.Domain.Entities
             var template = CharacterTemplate.CreateNPCTemplate(
                 "Test NPC", "Description", CreateDefaultStats(), new List<Guid>());
             var key = "AggressionLevel";
-            template.AddConfigurationData(key, "High");
+            template.AddConfiguration(key, "High");
 
             // Act
-            var result = template.RemoveConfigurationData(key);
+            var result = template.RemoveConfiguration(key);
 
             // Assert
             Assert.True(result);
@@ -191,7 +191,7 @@ namespace RpgGame.UnitTests.Domain.Entities
                 "Test NPC", "Description", CreateDefaultStats(), new List<Guid>());
 
             // Act
-            var result = template.RemoveConfigurationData("NonExistentKey");
+            var result = template.RemoveConfiguration("NonExistentKey");
 
             // Assert
             Assert.False(result);
@@ -317,8 +317,8 @@ namespace RpgGame.UnitTests.Domain.Entities
             // Arrange
             var template = CharacterTemplate.CreateNPCTemplate(
                 "Test NPC", "Description", CreateDefaultStats(), new List<Guid>());
-            template.AddConfigurationData("Key1", "Value1");
-            template.AddConfigurationData("Key2", "Value2");
+            template.AddConfiguration("Key1", "Value1");
+            template.AddConfiguration("Key2", "Value2");
 
             // Act
             template.ClearConfiguration();
@@ -357,10 +357,10 @@ namespace RpgGame.UnitTests.Domain.Entities
             
             template.AddAbility(fireBreathAbility);
             template.AddAbility(clawAttackAbility);
-            template.AddConfigurationData("Element", "Fire");
-            template.AddConfigurationData("FlightCapable", true);
-            template.AddConfigurationData("TreasureHoard", 10000);
-            template.AddConfigurationData("AggressionLevel", "Extreme");
+            template.AddConfiguration("Element", "Fire");
+            template.AddConfiguration("FlightCapable", true);
+            template.AddConfiguration("TreasureHoard", 10000);
+            template.AddConfiguration("AggressionLevel", "Extreme");
 
             // Assert
             Assert.Equal("Fire Dragon", template.Name);

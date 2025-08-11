@@ -63,5 +63,11 @@ namespace RpgGame.Domain.ValueObjects
                 Speed = Math.Max(1, Speed + speedMod),
                 Magic = Math.Max(0, Magic + magicMod)
             };
+
+        // Pure calculations only - no business actions
+        public bool IsAlive => CurrentHealth > 0;
+
+        public override string ToString() =>
+            $"Level: {Level}, Health: {CurrentHealth}/{MaxHealth}, Strength: {Strength}, Defense: {Defense}, Speed: {Speed}, Magic: {Magic}";
     }
 }
