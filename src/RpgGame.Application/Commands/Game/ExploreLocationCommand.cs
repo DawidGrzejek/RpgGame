@@ -87,10 +87,10 @@ namespace RpgGame.Application.Commands.Game
                     result.ExperienceGained = random.Next(5, 15);
                     result.Message = $"You gain {result.ExperienceGained} experience from exploration.";
 
-                    if (character is PlayerCharacter player)
+                    if (character.Type == RpgGame.Domain.Enums.CharacterType.Player)
                     {
-                        player.GainExperience(result.ExperienceGained);
-                        await _eventSourcingService.SaveAsync(player);
+                        character.GainExperience(result.ExperienceGained);
+                        await _eventSourcingService.SaveAsync(character);
                     }
                 }
                 else

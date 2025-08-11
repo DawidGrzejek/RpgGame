@@ -5,9 +5,10 @@ using RpgGame.Application.Events;
 using RpgGame.Application.Interfaces.Services;
 using RpgGame.Application.Repositories;
 using RpgGame.Application.Services;
-using RpgGame.Domain.Entities.Characters.Player;
+using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.World;
 using RpgGame.Domain.Interfaces.World;
+using RpgGame.Domain.Entities.Characters;
 using RpgGame.Infrastructure.Persistence.EFCore;
 using System;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace RpgGame.IntegrationTests.Application.Services
         private readonly GameDbContext _dbContext;
         private readonly IGameSaveService _gameSaveService;
         private readonly IGameWorld _gameWorld;
-        private readonly Warrior _testCharacter;
+        private readonly Character _testCharacter;
         private readonly string _testSaveName = "IntegrationTestSave";
 
         public GameSaveServiceIntegrationTests()
@@ -57,7 +58,8 @@ namespace RpgGame.IntegrationTests.Application.Services
             _gameWorld = _serviceProvider.GetRequiredService<IGameWorld>();
 
             // Create test character
-            _testCharacter = Warrior.Create("IntegrationTestWarrior");
+            _testCharacter = Character.CreatePlayer("IntegrationTestWarrior", Domain.Enums.PlayerClass.Warrior,
+                new RpgGame.Domain.ValueObjects.CharacterStats(100, 50, 30, 20, 10));
         }
 
         [Fact]

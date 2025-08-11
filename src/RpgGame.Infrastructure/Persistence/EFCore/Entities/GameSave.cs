@@ -35,7 +35,7 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         public Character PlayerCharacter
         {
             get => PlayerMapper.FromDto(PlayerCharacterData);
-            set => PlayerCharacterData = PlayerMapper.ToDto(value as PlayerCharacter);
+            set => PlayerCharacterData = PlayerMapper.ToDto(value);
         }
     }
 }

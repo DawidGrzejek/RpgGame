@@ -121,7 +121,6 @@ namespace RpgGame.Infrastructure
             services.AddScoped<ICharacterRepository, CharacterRepository>();
             services.AddScoped<IGameSaveRepository, GameSaveRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
-            services.AddScoped<IEnemyTemplateRepository, EnemyTemplateRepository>();
             services.AddScoped<IItemTemplateRepository, ItemTemplateRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
 

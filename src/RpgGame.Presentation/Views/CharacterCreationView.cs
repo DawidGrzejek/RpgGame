@@ -1,5 +1,5 @@
 ﻿using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.Player;
+using RpgGame.Domain.Enums;
 using System;
 
 namespace RpgGame.Presentation.Views

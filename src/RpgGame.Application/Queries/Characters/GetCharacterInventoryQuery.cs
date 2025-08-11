@@ -37,11 +37,17 @@ namespace RpgGame.Application.Queries.Inventory
         {
             try
             {
-                var character = await _eventSourcingService.GetByIdAsync<PlayerCharacter>(request.CharacterId);
+                var character = await _eventSourcingService.GetByIdAsync<Character>(request.CharacterId);
 
                 if (character == null)
                 {
                     return QueryResult<IReadOnlyList<IItem>>.Fail($"Character with ID {request.CharacterId} not found");
+                }
+
+                // Only players have inventories in this context
+                if (character.Type != RpgGame.Domain.Enums.CharacterType.Player)
+                {
+                    return QueryResult<IReadOnlyList<IItem>>.Fail($"Character {request.CharacterId} is not a player");
                 }
 
                 return QueryResult<IReadOnlyList<IItem>>.Ok(character.Inventory.Items);

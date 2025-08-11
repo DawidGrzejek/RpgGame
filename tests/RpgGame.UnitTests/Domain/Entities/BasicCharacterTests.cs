@@ -50,7 +50,6 @@ namespace RpgGame.UnitTests.Domain.Entities
             Assert.Equal(15, stats.Defense);
             Assert.Equal(18, stats.Speed);
             Assert.Equal(12, stats.Magic);
-            Assert.True(stats.IsAlive);
         }
 
         [Fact]
@@ -292,7 +291,7 @@ namespace RpgGame.UnitTests.Domain.Entities
             Assert.NotNull(state);
             Assert.Equal(character.Id, state.AggregateId);
             Assert.Equal("TestHero", state.Name);
-            Assert.Equal(character.Stats.CurrentHealth, state.CurrentHealth);
+            Assert.Equal(character.Stats.CurrentHealth, state.Health);
             Assert.Equal(character.Stats.MaxHealth, state.MaxHealth);
             Assert.Equal(character.Stats.Level, state.Level);
         }

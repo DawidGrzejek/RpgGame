@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RpgGame.Application.Repositories;
-using RpgGame.Domain.Entities.Characters.Player;
+using RpgGame.Domain.Entities.Characters.Base;
 using RpgGame.Domain.Entities.World;
+using RpgGame.Domain.ValueObjects;
 using RpgGame.Infrastructure.Persistence.EFCore;
 using RpgGame.Infrastructure.Persistence.Repositories;
 using System;
@@ -16,7 +17,7 @@ namespace RpgGame.UnitTests.Infrastructure.Persistence
         private readonly GameDbContext _context;
         private readonly GameSaveRepository _repository;
         private readonly string _testSaveName = "TestSave";
-        private readonly Warrior _testCharacter;
+        private readonly Character _testCharacter;
         private readonly string _testLocationName = "TestLocation";
         private readonly int _testPlayTime = 600; // 10 minutes
 
@@ -31,7 +32,8 @@ namespace RpgGame.UnitTests.Infrastructure.Persistence
             _repository = new GameSaveRepository(_context);
 
             // Create test character
-            _testCharacter = Warrior.Create("TestWarrior");
+            _testCharacter = Character.CreatePlayer("TestWarrior", RpgGame.Domain.Enums.PlayerClass.Warrior, 
+                new CharacterStats(1, 100, 20, 10, 15, 5));
         }
 
         [Fact]

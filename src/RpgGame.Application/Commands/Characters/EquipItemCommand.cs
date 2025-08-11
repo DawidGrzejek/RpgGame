@@ -53,8 +53,8 @@ namespace RpgGame.Application.Commands.Inventory
                     return CommandResult.Fail($"Character with ID {request.CharacterId} not found");
                 }
 
-                // Check if it's a PlayerCharacter since only players can equip items
-                if (character is not PlayerCharacter playerCharacter)
+                // Check if it's a player character since only players can equip items
+                if (character.Type != RpgGame.Domain.Enums.CharacterType.Player)
                 {
                     return CommandResult.Fail($"Character with ID {request.CharacterId} is not a player character");
                 }
@@ -74,12 +74,12 @@ namespace RpgGame.Application.Commands.Inventory
                 }
 
                 // Equip the item - this will generate an event in the character's DomainEvents collection
-                playerCharacter.EquipItem(equipment);
+                character.EquipItem(equipment);
 
                 // Save the updated character with its new event
-                await _eventSourcingService.SaveAsync(playerCharacter);
+                await _eventSourcingService.SaveAsync(character);
 
-                return CommandResult.Ok($"Character {playerCharacter.Name} equipped {item.Name}");
+                return CommandResult.Ok($"Character {character.Name} equipped {item.Name}");
             }
             catch (Exception ex)
             {

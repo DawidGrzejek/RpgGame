@@ -1,7 +1,7 @@
 ﻿using RpgGame.Application.Interfaces.Services;
 using RpgGame.Application.Services;
 using RpgGame.Domain.Entities.Characters.Base;
-using RpgGame.Domain.Entities.Characters.NPC.Enemy;
+using RpgGame.Domain.Enums;
 using RpgGame.Domain.Entities.World;
 using RpgGame.Domain.Interfaces.World;
 using System;

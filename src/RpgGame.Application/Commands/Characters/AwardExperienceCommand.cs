@@ -33,10 +33,16 @@ namespace RpgGame.Application.Commands.Characters
 
         public async Task<OperationResult> Handle(AwardExperienceCommand request, CancellationToken cancellationToken)
         {
-            var character = await _eventSourcingService.GetByIdAsync<PlayerCharacter>(request.CharacterId);
+            var character = await _eventSourcingService.GetByIdAsync<Character>(request.CharacterId);
             if (character == null)
             {
                 return OperationResult.NotFound("Character", request.CharacterId.ToString());
+            }
+
+            // Only players can gain experience
+            if (character.Type != RpgGame.Domain.Enums.CharacterType.Player)
+            {
+                return OperationResult.Failure("Character.NotPlayer", "Character is not a player and cannot gain experience");
             }
 
             character.GainExperience(request.ExperienceAmount);

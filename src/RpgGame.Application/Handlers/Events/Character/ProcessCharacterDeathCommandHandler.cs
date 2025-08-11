@@ -158,16 +158,15 @@ namespace RpgGame.Application.Handlers.Events.Character
             _logger.LogInformation("Processing NPC death for {NpcName}", npc.Name);
 
             // NPCs might drop experience and loot for the killer
-            if (request.KillerId.HasValue && npc is Enemy enemy)
+            if (request.KillerId.HasValue && npc.Type == CharacterType.NPC)
             {
-                result.ExperienceDropped = enemy.ExperienceReward;
+                // Get experience reward from template or custom data
+                var experienceReward = GetExperienceReward(npc);
+                result.ExperienceDropped = experienceReward;
 
-                // Determine loot drops
-                var droppedItem = enemy.DropLoot();
-                if (droppedItem != null)
-                {
-                    result.ItemsDropped.Add(droppedItem.Name);
-                }
+                // Determine loot drops from template
+                var droppedItems = GetLootDrops(npc);
+                result.ItemsDropped.AddRange(droppedItems);
 
                 // Award experience to killer if it's a player
                 await AwardExperienceToKiller(request.KillerId.Value, result.ExperienceDropped, cancellationToken);
@@ -320,6 +319,44 @@ namespace RpgGame.Application.Handlers.Events.Character
             }
 
             result.CompletedAchievements = achievements;
+        }
+
+        private int GetExperienceReward(RpgGame.Domain.Entities.Characters.Base.Character npc)
+        {
+            // Template-driven approach: Get experience from template or custom data
+            if (npc.CustomData.TryGetValue("ExperienceReward", out var expReward))
+            {
+                return Convert.ToInt32(expReward);
+            }
+            
+            // Default experience based on level
+            return npc.Stats.Level * 10;
+        }
+
+        private List<string> GetLootDrops(RpgGame.Domain.Entities.Characters.Base.Character npc)
+        {
+            var droppedItems = new List<string>();
+            
+            // Template-driven approach: Get loot from template or custom data
+            if (npc.CustomData.TryGetValue("LootTable", out var lootData))
+            {
+                // This would typically involve a more complex loot generation system
+                // For now, return simple loot based on custom data
+                if (lootData is List<string> lootList)
+                {
+                    // Simple random drop logic
+                    var random = new Random();
+                    foreach (var item in lootList)
+                    {
+                        if (random.NextDouble() < 0.3) // 30% chance to drop each item
+                        {
+                            droppedItems.Add(item);
+                        }
+                    }
+                }
+            }
+            
+            return droppedItems;
         }
     }
 }

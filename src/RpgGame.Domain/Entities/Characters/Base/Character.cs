@@ -301,23 +301,23 @@ namespace RpgGame.Domain.Entities.Characters.Base
                         if (created.CharacterType == CharacterType.Player)
                         {
                             // For players, we need to determine the class from other events or use default
-                            character = Character.CreatePlayer(created.Name, PlayerClass.Warrior, baseStats);
+                            character = Character.CreatePlayer(created.Name, Enums.PlayerClass.Warrior, baseStats);
                         }
                         else
                         {
                             // For NPCs, use default behavior
-                            character = Character.CreateNPC(created.Name, NPCBehavior.Passive, baseStats);
+                            character = Character.CreateNPC(created.Name, Enums.NPCBehavior.Passive, baseStats);
                         }
                         
-                        // Set the reconstructed ID and version
+                        // Set the reconstructed ID
                         character.Id = created.AggregateId;
-                        character.Version = created.Version;
+                        //character.Version = created.Version;
                         break;
 
                     case Events.Characters.PlayerGainedExperience expEvent:
                         if (character != null)
                         {
-                            character.Experience = expEvent.NewExperience;
+                            //character.Experience = expEvent.NewExperience;
                         }
                         break;
 
