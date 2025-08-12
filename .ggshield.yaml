@@ -1,0 +1,48 @@
+# GitGuardian Shield Configuration
+# This file configures ggshield for secret detection
+
+# Version of the configuration schema
+version: 2
+
+# Settings for secret detection
+secret:
+  # Show secrets in plaintext in the output (disabled for security)
+  show_secrets: false
+  
+  # Ignore certain file patterns that commonly contain false positives
+  ignore_paths:
+    # Node modules and package locks
+    - "node_modules/**"
+    - "package-lock.json"
+    - "yarn.lock"
+    
+    # Build outputs and dependencies
+    - "**/bin/**"
+    - "**/obj/**"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/.next/**"
+    
+    # Environment files (they should contain secrets but are gitignored)
+    - ".env"
+    - ".env.local"
+    - ".env.*.local"
+    
+    # Log files
+    - "**/*.log"
+    - "**/logs/**"
+    
+    # Test data that might contain dummy credentials
+    - "**/test-data/**"
+    - "**/fixtures/**"
+    
+  # Ignore certain patterns known to be false positives
+  ignore_patterns:
+    # Common false positives in .NET projects
+    - "fa2ad725e2734ebc911802d2a30430ddf03ffa18865e4c068980eb0fa96e8db8" # Example JWT secret
+    
+  # Maximum number of secrets to report
+  max_secrets: 20
+
+# Settings for exit codes
+exit_zero: false  # Return non-zero exit code when secrets are found
