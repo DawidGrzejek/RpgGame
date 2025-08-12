@@ -12,6 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using RpgGame.Infrastructure.Services;
+using DotNetEnv;
+
+// Load .env file if it exists
+Env.TraversePath().Load();
 
 NLog.LogManager.Setup().LoadConfigurationFromAppSettings();
 var logger = NLog.LogManager.GetCurrentClassLogger();
@@ -19,6 +23,13 @@ var logger = NLog.LogManager.GetCurrentClassLogger();
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    // Override connection string with environment variable if available
+    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING_DEFAULT");
+    if (!string.IsNullOrEmpty(connectionString))
+    {
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+    }
 
     // Remove default logging providers
     builder.Logging.ClearProviders();

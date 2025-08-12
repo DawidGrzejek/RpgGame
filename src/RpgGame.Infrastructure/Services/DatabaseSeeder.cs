@@ -69,7 +69,7 @@ namespace RpgGame.Infrastructure.Services
             // Create default GameMaster user
             const string gameMasterEmail = "gamemaster@rpggame.local";
             const string gameMasterUsername = "GameMaster";
-            const string gameMasterPassword = "GameMaster123!";
+            var gameMasterPassword = Environment.GetEnvironmentVariable("SEED_USER_PASSWORD") ?? throw new InvalidOperationException("SEED_USER_PASSWORD environment variable is not set");
 
             var existingUser = await userManager.FindByEmailAsync(gameMasterEmail);
             if (existingUser == null)

@@ -48,10 +48,11 @@ ng test
 ```
 
 ### Running the Full Application
-1. Start the .NET Web API: `dotnet run` from `src/RpgGame.WebApi`
-2. Start the Angular UI: `npm start` from `src/RpgGame.AngularUI/rpg-game-ui`
-3. API runs on `https://localhost:7000`
-4. Angular app runs on `http://localhost:4200`
+1. **Set up environment variables**: Copy `.env.example` to `.env` and configure your database connection and seed password
+2. Start the .NET Web API: `dotnet run` from `src/RpgGame.WebApi`
+3. Start the Angular UI: `npm start` from `src/RpgGame.AngularUI/rpg-game-ui`
+4. API runs on `https://localhost:7000`
+5. Angular app runs on `http://localhost:4200`
 
 ## Architecture Overview
 
@@ -140,6 +141,24 @@ src/
 ├── RpgGame.Presentation/   # Console application
 └── RpgGame.AngularUI/      # Angular frontend
 ```
+
+## Environment Configuration
+
+### Required Environment Variables
+The application requires these environment variables for secure operation:
+
+- `CONNECTION_STRING_DEFAULT`: Database connection string
+- `SEED_USER_PASSWORD`: Password for default GameMaster user seeding
+
+### Setup Instructions
+1. Copy `.env.example` to `.env` in the project root
+2. Update the values in `.env` with your actual credentials
+3. The `.env` file is automatically loaded on application startup
+4. Never commit `.env` files to version control (they are gitignored)
+
+### Fallback Behavior
+- If `CONNECTION_STRING_DEFAULT` is not set, uses LocalDB connection from `appsettings.Development.json`
+- If `SEED_USER_PASSWORD` is not set, application throws an error during seeding to prevent insecure defaults
 
 ## Development Workflow
 

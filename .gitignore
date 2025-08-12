@@ -363,3 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 /src/RpgGame.AngularUI/rpg-game-ui/.gitignore
 /src/RpgGame.AngularUI/rpg-game-ui/.vscode
+
+# Configuration files with sensitive data
+appsettings.json
+appsettings.Production.json
+.env
