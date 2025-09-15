@@ -11,7 +11,7 @@ using RpgGame.Application.Interfaces.Repositories;
 namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;

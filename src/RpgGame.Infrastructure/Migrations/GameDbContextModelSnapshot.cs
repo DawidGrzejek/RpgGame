@@ -18,10 +18,236 @@ namespace RpgGame.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("RpgGame")
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Configuration.AbilityTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AbilityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AnimationName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Cooldown")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ManaCost")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Range")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Requirements")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoundEffect")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("AbilityTemplates", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Configuration.CharacterTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AbilityIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BehaviorData")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CharacterType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConfigurationData")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("LootTableIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NPCBehavior")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PlayerClass")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("CharacterTemplates", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Configuration.ItemTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("EquipmentSlot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsConsumable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEquippable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("StatModifiers")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ItemTemplates", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.EventSourcing.CharacterSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("The Character ID this snapshot represents");
+
+                    b.Property<int>("CharacterLevel")
+                        .HasColumnType("int")
+                        .HasComment("Character level at time of snapshot");
+
+                    b.Property<string>("CharacterName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Character name for quick lookups");
+
+                    b.Property<string>("CharacterType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Character type (Player/NPC)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("When this snapshot was created");
+
+                    b.Property<TimeSpan>("CreationDuration")
+                        .HasColumnType("time")
+                        .HasComment("Time taken to create this snapshot");
+
+                    b.Property<int>("EventVersion")
+                        .HasColumnType("int")
+                        .HasComment("The event version this snapshot captures up to");
+
+                    b.Property<bool>("IsLatest")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Indicates if this is the latest snapshot for the character");
+
+                    b.Property<string>("SerializedState")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(MAX)")
+                        .HasComment("Serialized character state as JSON");
+
+                    b.Property<int>("StateSize")
+                        .HasColumnType("int")
+                        .HasComment("Size of serialized state in bytes");
+
+                    b.Property<int>("TotalEventCount")
+                        .HasColumnType("int")
+                        .HasComment("Total number of events used to create this snapshot");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("IX_CharacterSnapshots_CharacterId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_CharacterSnapshots_CreatedAt");
+
+                    b.HasIndex("StateSize")
+                        .HasDatabaseName("IX_CharacterSnapshots_StateSize");
+
+                    b.HasIndex("CharacterId", "IsLatest")
+                        .HasDatabaseName("IX_CharacterSnapshots_CharacterId_IsLatest")
+                        .HasFilter("[IsLatest] = 1");
+
+                    b.HasIndex("CharacterType", "CharacterLevel")
+                        .HasDatabaseName("IX_CharacterSnapshots_Type_Level");
+
+                    b.ToTable("CharacterSnapshots", "RpgGame");
+                });
 
             modelBuilder.Entity("RpgGame.Domain.Entities.Users.User", b =>
                 {
@@ -218,6 +444,84 @@ namespace RpgGame.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens", "RpgGame");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Configuration.AbilityTemplate", b =>
+                {
+                    b.OwnsMany("RpgGame.Domain.Entities.Configuration.AbilityEffect", "Effects", b1 =>
+                        {
+                            b1.Property<Guid>("AbilityTemplateId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<int>("BasePower")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Duration")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("EffectType")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Parameters")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("AbilityTemplateId", "Id");
+
+                            b1.ToTable("AbilityEffect", "RpgGame");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AbilityTemplateId");
+                        });
+
+                    b.Navigation("Effects");
+                });
+
+            modelBuilder.Entity("RpgGame.Domain.Entities.Configuration.CharacterTemplate", b =>
+                {
+                    b.OwnsOne("RpgGame.Domain.ValueObjects.CharacterStats", "BaseStats", b1 =>
+                        {
+                            b1.Property<Guid>("CharacterTemplateId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("CurrentHealth")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Defense")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Level")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Magic")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("MaxHealth")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Speed")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Strength")
+                                .HasColumnType("int");
+
+                            b1.HasKey("CharacterTemplateId");
+
+                            b1.ToTable("CharacterTemplates", "RpgGame");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CharacterTemplateId");
+                        });
+
+                    b.Navigation("BaseStats")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("RpgGame.Domain.Entities.Users.User", b =>

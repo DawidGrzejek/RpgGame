@@ -2,15 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-  User,
-  Role,
+  UserManagementDto,
+  RoleManagementDto,
   CreateUserRequest,
   UpdateUserRequest,
   CreateRoleRequest,
   UpdateRoleRequest,
-  UserRoleRequest,
+  AssignRoleRequest,
+  RemoveRoleRequest,
   UserLockoutRequest,
-  PasswordResetRequest,
+  ChangePasswordRequest,
   ApiResponse,
   PagedResult,
   UserSearchFilter
@@ -25,96 +26,75 @@ export class UserManagementService {
   constructor(private http: HttpClient) { }
 
   // User Operations
-  getUsers(filter: UserSearchFilter): Observable<ApiResponse<PagedResult<User>>> {
+  getUsers(filter: UserSearchFilter): Observable<PagedResult<UserManagementDto>> {
     let params = new HttpParams()
       .set('page', filter.page.toString())
       .set('pageSize', filter.pageSize.toString());
 
     if (filter.search) {
-      params = params.set('search', filter.search);
+      params = params.set('searchTerm', filter.search);
     }
     if (filter.role) {
-      params = params.set('role', filter.role);
-    }
-    if (filter.isLockedOut !== undefined) {
-      params = params.set('isLockedOut', filter.isLockedOut.toString());
-    }
-    if (filter.emailConfirmed !== undefined) {
-      params = params.set('emailConfirmed', filter.emailConfirmed.toString());
-    }
-    if (filter.sortBy) {
-      params = params.set('sortBy', filter.sortBy);
-    }
-    if (filter.sortDirection) {
-      params = params.set('sortDirection', filter.sortDirection);
+      params = params.set('roleFilter', filter.role);
     }
 
-    return this.http.get<ApiResponse<PagedResult<User>>>(`${this.apiUrl}/admin/users`, { params });
+    return this.http.get<PagedResult<UserManagementDto>>(`${this.apiUrl}/usermanagement`, { params });
   }
 
-  getUserById(id: string): Observable<ApiResponse<User>> {
-    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/admin/users/${id}`);
+  getUserById(id: string): Observable<UserManagementDto> {
+    return this.http.get<UserManagementDto>(`${this.apiUrl}/usermanagement/${id}`);
   }
 
-  createUser(request: CreateUserRequest): Observable<ApiResponse<User>> {
-    return this.http.post<ApiResponse<User>>(`${this.apiUrl}/admin/users`, request);
+  createUser(request: CreateUserRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usermanagement`, request);
   }
 
-  updateUser(request: UpdateUserRequest): Observable<ApiResponse<User>> {
-    return this.http.put<ApiResponse<User>>(`${this.apiUrl}/admin/users/${request.id}`, request);
+  updateUser(request: UpdateUserRequest): Observable<any> {
+    return this.http.put(`${this.apiUrl}/usermanagement/${request.id}`, request);
   }
 
-  deleteUser(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/admin/users/${id}`);
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/usermanagement/${id}`);
   }
 
-  lockoutUser(request: UserLockoutRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/admin/users/${request.userId}/lockout`, request);
+  lockUser(request: UserLockoutRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usermanagement/${request.userId}/lock`, request);
   }
 
-  unlockUser(userId: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/admin/users/${userId}/unlock`, {});
+  unlockUser(userId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usermanagement/${userId}/unlock`, {});
   }
 
-  resetUserPassword(request: PasswordResetRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/admin/users/${request.userId}/reset-password`, request);
+  changePassword(request: ChangePasswordRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usermanagement/${request.userId}/change-password`, request);
   }
 
-  confirmUserEmail(userId: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/admin/users/${userId}/confirm-email`, {});
+  assignRole(request: AssignRoleRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usermanagement/${request.userId}/roles`, request);
+  }
+
+  removeRole(request: RemoveRoleRequest): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/usermanagement/${request.userId}/roles`, { body: request });
   }
 
   // Role Operations
-  getRoles(): Observable<ApiResponse<Role[]>> {
-    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/admin/roles`);
+  getRoles(): Observable<RoleManagementDto[]> {
+    return this.http.get<RoleManagementDto[]>(`${this.apiUrl}/rolemanagement`);
   }
 
-  getRoleById(id: string): Observable<ApiResponse<Role>> {
-    return this.http.get<ApiResponse<Role>>(`${this.apiUrl}/admin/roles/${id}`);
+  getRoleById(id: string): Observable<RoleManagementDto> {
+    return this.http.get<RoleManagementDto>(`${this.apiUrl}/rolemanagement/${id}`);
   }
 
-  createRole(request: CreateRoleRequest): Observable<ApiResponse<Role>> {
-    return this.http.post<ApiResponse<Role>>(`${this.apiUrl}/admin/roles`, request);
+  createRole(request: CreateRoleRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/rolemanagement`, request);
   }
 
-  updateRole(request: UpdateRoleRequest): Observable<ApiResponse<Role>> {
-    return this.http.put<ApiResponse<Role>>(`${this.apiUrl}/admin/roles/${request.id}`, request);
+  updateRole(request: UpdateRoleRequest): Observable<any> {
+    return this.http.put(`${this.apiUrl}/rolemanagement/${request.id}`, request);
   }
 
-  deleteRole(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/admin/roles/${id}`);
-  }
-
-  // User-Role Operations
-  addUserToRole(request: UserRoleRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/admin/users/${request.userId}/roles`, request);
-  }
-
-  removeUserFromRole(request: UserRoleRequest): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/admin/users/${request.userId}/roles/${request.roleName}`);
-  }
-
-  getUserRoles(userId: string): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${this.apiUrl}/admin/users/${userId}/roles`);
+  deleteRole(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/rolemanagement/${id}`);
   }
 }

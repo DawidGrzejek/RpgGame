@@ -11,7 +11,7 @@ namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
     [Authorize(Policy = "GameMaster")]
-    [Route("api/v1/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class SavesController : ControllerBase
     {
         private readonly IGameSaveService _gameSaveService;

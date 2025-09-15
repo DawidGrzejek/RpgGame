@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Task",
       "Bash(mkdir:*)",
       "Bash(dotnet ef migrations add:*)",
       "Bash(setx:*)",
@@ -11,7 +12,19 @@
       "Bash(find:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(taskkill:*)",
+      "mcp__atlassian__createJiraIssue",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getConfluenceSpaces",
+      "mcp__atlassian__search",
+      "Bash(ping:*)",
+      "Bash(telnet:*)",
+      "Bash(Test-NetConnection -ComputerName db24548.public.databaseasp.net -Port 1433)",
+      "Bash(powershell:*)",
+      "Bash(sqllocaldb info:*)",
+      "Bash(sqllocaldb create:*)",
+      "Bash(sqllocaldb:*)"
     ],
     "deny": []
   }

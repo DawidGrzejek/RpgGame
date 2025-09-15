@@ -139,7 +139,11 @@ namespace RpgGame.Infrastructure.Services.Authentication
 
             var accessToken = _jwtTokenService.GenerateAccessToken(userDto);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
-            var expiresAt = DateTime.UtcNow.AddMinutes(60); // Match your JWT expiry
+            
+            // Ensure we use UTC time and mark it explicitly as UTC
+            var expiresAtUtc = DateTime.UtcNow.AddMinutes(60);
+            // Convert to UTC DateTime to ensure proper serialization
+            var expiresAt = DateTime.SpecifyKind(expiresAtUtc, DateTimeKind.Utc);
 
             await _jwtTokenService.StoreRefreshTokenAsync(refreshToken, identityUser.Id, expiresAt.AddDays(7));
 

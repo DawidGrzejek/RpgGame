@@ -15,7 +15,7 @@ namespace RpgGame.WebApi.Controllers
     /// Controller for managing character inventory operations.
     /// </summary>
     [ApiController]
-    [Route("api/characters/{characterId}/inventory")]
+    [Route("api/v{version:apiVersion}/characters/{characterId}/inventory")]
     public class InventoryController : ControllerBase
     {
         private readonly IMediator _mediator;

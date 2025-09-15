@@ -60,7 +60,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^info: Microsoft.Hosting.Lifetime",
-          "endsPattern": "^\\s*Application started\\."
+          "endsPattern": "(Application started|Now listening on|dotnet watch)"
         }
       }
     }

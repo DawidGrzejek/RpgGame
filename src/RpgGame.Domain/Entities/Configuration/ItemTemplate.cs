@@ -13,14 +13,14 @@ namespace RpgGame.Domain.Entities.Configuration
     /// </summary>
     public class ItemTemplate : DomainEntity
     {
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public ItemType ItemType { get; private set; }
-        public int Value { get; private set; }
-        public Dictionary<string, int> StatModifiers { get; private set; }
-        public bool IsConsumable { get; private set; }
-        public bool IsEquippable { get; private set; }
-        public EquipmentSlot? EquipmentSlot { get; private set; }
+        public string Name { get; protected set; }
+        public string Description { get; protected set; }
+        public ItemType ItemType { get; protected set; }
+        public int Value { get; protected set; }
+        public Dictionary<string, int> StatModifiers { get; protected set; }
+        public bool IsConsumable { get; protected set; }
+        public bool IsEquippable { get; protected set; }
+        public EquipmentSlot? EquipmentSlot { get; protected set; }
 
         // Private constructor for EF Core
         private ItemTemplate()

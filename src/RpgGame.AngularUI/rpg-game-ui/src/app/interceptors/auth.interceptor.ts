@@ -9,16 +9,27 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    console.log('🎯 AuthInterceptor constructor called');
+  }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    console.log('🔍 AuthInterceptor.intercept() called for URL:', request.url);
+    
     // Add auth token to requests
     const authRequest = this.addTokenToRequest(request);
 
     return next.handle(authRequest).pipe(
       catchError((error: HttpErrorResponse) => {
+        console.error('🚨 HTTP Error in AuthInterceptor:', {
+          url: request.url,
+          status: error.status,
+          message: error.message
+        });
+        
         // Handle 401 errors (unauthorized)
         if (error.status === 401 && !authRequest.url.includes('/auth/')) {
+          console.log('🔄 Attempting to handle 401 error for:', request.url);
           return this.handle401Error(authRequest, next);
         }
 
@@ -32,15 +43,26 @@ export class AuthInterceptor implements HttpInterceptor {
    */
   private addTokenToRequest(request: HttpRequest<any>): HttpRequest<any> {
     const accessToken = this.authService.getAccessToken();
+    
+    console.log('Auth Interceptor Debug:', {
+      url: request.url,
+      hasToken: !!accessToken,
+      tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'null',
+      isAuthUrl: request.url.includes('/auth/')
+    });
 
     if (accessToken && !request.url.includes('/auth/login') && !request.url.includes('/auth/register')) {
-      return request.clone({
+      const authorizedRequest = request.clone({
         setHeaders: {
           Authorization: `Bearer ${accessToken}`
         }
       });
+      
+      console.log('Added Authorization header:', authorizedRequest.headers.get('Authorization')?.substring(0, 30) + '...');
+      return authorizedRequest;
     }
 
+    console.log('No token added to request');
     return request;
   }
 
