@@ -1,5 +1,10 @@
 # GitGuardian Shield Configuration
 # This file configures ggshield for secret detection
+#
+# Setup Instructions:
+# 1. Get a free API key: https://dashboard.gitguardian.com/
+# 2. Authenticate: python -m ggshield auth login
+# 3. The pre-commit hook will then work automatically
 
 # Version of the configuration schema
 version: 2

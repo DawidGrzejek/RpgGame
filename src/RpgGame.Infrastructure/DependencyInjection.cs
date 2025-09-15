@@ -12,11 +12,14 @@ using RpgGame.Infrastructure.Persistence.Repositories;
 using RpgGame.Infrastructure.Persistence.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 using RpgGame.Application.Interfaces.Repositories;
 using RpgGame.Application.Interfaces.Authentication;
 using RpgGame.Infrastructure.Services.Authentication;
 using RpgGame.Application.Interfaces.Persistence;
+using RpgGame.Application.Services;
+using RpgGame.Infrastructure.Services;
 
 
 namespace RpgGame.Infrastructure
@@ -83,7 +86,9 @@ namespace RpgGame.Infrastructure
                     ValidIssuer = jwtSettings["Issuer"],
                     ValidAudience = jwtSettings["Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = ClaimTypes.Role,
+                    NameClaimType = ClaimTypes.Name
                 };
 
                 // SignalR support
@@ -127,6 +132,9 @@ namespace RpgGame.Infrastructure
             // Register authentication services
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+            // Register event archiving and serialization services
+            services.AddScoped<IEventSerializationService, EventSerializationService>();
 
             return services;
         }

@@ -6,14 +6,16 @@ import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserManagementService } from '../../services/user-management.service';
 import { NotificationService } from '../../services/notification.service';
 import {
-  User,
-  Role,
+  UserManagementDto,
+  RoleManagementDto,
   CreateUserRequest,
   UpdateUserRequest,
   CreateRoleRequest,
   UpdateRoleRequest,
   UserLockoutRequest,
-  PasswordResetRequest,
+  ChangePasswordRequest,
+  AssignRoleRequest,
+  RemoveRoleRequest,
   UserSearchFilter,
   PagedResult
 } from '../../models/user-management.model';
@@ -136,9 +138,8 @@ import {
                   <div class="actions">
                     <button class="action-btn edit" (click)="editUser(user)" title="Edit User">✏️</button>
                     <button class="action-btn roles" (click)="manageUserRoles(user)" title="Manage Roles">🎭</button>
-                    <button *ngIf="user.isLockedOut" class="action-btn unlock" (click)="unlockUser(user.id)" title="Unlock User">🔓</button>
-                    <button *ngIf="!user.isLockedOut" class="action-btn lock" (click)="lockUser(user)" title="Lock User">🔒</button>
-                    <button *ngIf="!user.emailConfirmed" class="action-btn confirm" (click)="confirmEmail(user.id)" title="Confirm Email">✅</button>
+                    <button *ngIf="isUserLocked(user)" class="action-btn unlock" (click)="unlockUser(user.id)" title="Unlock User">🔓</button>
+                    <button *ngIf="!isUserLocked(user)" class="action-btn lock" (click)="lockUser(user)" title="Lock User">🔒</button>
                     <button class="action-btn reset" (click)="resetPassword(user)" title="Reset Password">🔑</button>
                     <button class="action-btn delete" (click)="deleteUser(user)" title="Delete User">🗑️</button>
                   </div>
@@ -183,9 +184,9 @@ import {
                 <button class="action-btn delete" (click)="deleteRole(role)" title="Delete Role">🗑️</button>
               </div>
             </div>
-            <p class="role-description">{{ role.description || 'No description' }}</p>
+            <p class="role-description">Role for managing system permissions</p>
             <div class="role-stats">
-              <span class="users-count">{{ role.usersCount }} users</span>
+              <span class="users-count">{{ role.userCount }} users</span>
             </div>
           </div>
         </div>
@@ -265,10 +266,6 @@ import {
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="roleDescription">Description</label>
-              <textarea id="roleDescription" formControlName="description" class="form-control" rows="3"></textarea>
-            </div>
 
             <div class="modal-actions">
               <button type="button" class="btn btn-secondary" (click)="closeRoleModal()">Cancel</button>
@@ -704,7 +701,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   activeTab: 'users' | 'roles' = 'users';
 
   // Users data
-  users: User[] = [];
+  users: UserManagementDto[] = [];
   usersTotal = 0;
   currentPage = 1;
   pageSize = 10;
@@ -712,7 +709,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   isLoadingUsers = false;
 
   // Roles data
-  roles: Role[] = [];
+  roles: RoleManagementDto[] = [];
 
   // Search and filters
   searchControl!: FormControl;
@@ -725,8 +722,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // Modals
   showUserModal = false;
   showRoleModal = false;
-  editingUser: User | null = null;
-  editingRole: Role | null = null;
+  editingUser: UserManagementDto | null = null;
+  editingRole: RoleManagementDto | null = null;
 
   // Forms
   userForm: FormGroup;
@@ -748,6 +745,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    console.log('🚀 UserManagementComponent.ngOnInit() called');
     this.loadRoles();
     this.loadUsers();
     this.setupSearchAndFilters();
@@ -768,8 +766,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   private createRoleForm(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      description: ['']
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]]
     });
   }
 
@@ -833,13 +830,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          if (response.isSuccess && response.data) {
-            this.users = response.data.items;
-            this.usersTotal = response.data.totalCount;
-            this.totalPages = response.data.totalPages;
-          } else {
-            this.notificationService.showError('Failed to load users: ' + response.errors.join(', '));
-          }
+          this.users = response.items;
+          this.usersTotal = response.totalCount;
+          this.totalPages = response.totalPages;
           this.isLoadingUsers = false;
         },
         error: (error) => {
@@ -850,17 +843,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadRoles(): void {
+    console.log('👥 UserManagementComponent.loadRoles() called');
     this.userManagementService.getRoles()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          if (response.isSuccess && response.data) {
-            this.roles = response.data;
-          } else {
-            this.notificationService.showError('Failed to load roles: ' + response.errors.join(', '));
-          }
+        next: (roles) => {
+          console.log('✅ Roles loaded successfully:', roles);
+          this.roles = roles;
         },
         error: (error) => {
+          console.error('❌ Error loading roles:', error);
           this.notificationService.showError('Error loading roles: ' + error.message);
         }
       });
@@ -883,16 +875,22 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  getUserStatus(user: User): string {
-    if (user.isLockedOut) return 'Locked Out';
+  getUserStatus(user: UserManagementDto): string {
+    if (this.isUserLocked(user)) return 'Locked Out';
     if (!user.emailConfirmed) return 'Unconfirmed';
+    if (!user.isActive) return 'Inactive';
     return 'Active';
   }
 
-  getUserStatusClass(user: User): string {
-    if (user.isLockedOut) return 'locked';
+  getUserStatusClass(user: UserManagementDto): string {
+    if (this.isUserLocked(user)) return 'locked';
     if (!user.emailConfirmed) return 'unconfirmed';
+    if (!user.isActive) return 'locked';
     return 'active';
+  }
+
+  isUserLocked(user: UserManagementDto): boolean {
+    return user.lockoutEnd != null && new Date(user.lockoutEnd) > new Date();
   }
 
   // User Modal Methods
@@ -904,7 +902,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.showUserModal = true;
   }
 
-  editUser(user: User): void {
+  editUser(user: UserManagementDto): void {
     this.editingUser = user;
     this.selectedRoles = [...user.roles];
     this.userForm.patchValue({
@@ -943,20 +941,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           id: this.editingUser.id,
           username: formValue.username,
           email: formValue.email,
-          roles: this.selectedRoles
+          emailConfirmed: this.editingUser.emailConfirmed,
+          lockoutEnabled: this.editingUser.lockoutEnabled,
+          lockoutEnd: this.editingUser.lockoutEnd,
+          roles: this.selectedRoles,
+          isActive: this.editingUser.isActive
         };
 
         this.userManagementService.updateUser(request)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: (response) => {
-              if (response.isSuccess) {
-                this.notificationService.showSuccess('User updated successfully');
-                this.closeUserModal();
-                this.loadUsers();
-              } else {
-                this.notificationService.showError('Failed to update user: ' + response.errors.join(', '));
-              }
+            next: () => {
+              this.notificationService.showSuccess('User updated successfully');
+              this.closeUserModal();
+              this.loadUsers();
             },
             error: (error) => {
               this.notificationService.showError('Error updating user: ' + error.message);
@@ -968,20 +966,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           username: formValue.username,
           email: formValue.email,
           password: formValue.password,
-          roles: this.selectedRoles
+          roles: this.selectedRoles,
+          emailConfirmed: false,
+          lockoutEnabled: true
         };
 
         this.userManagementService.createUser(request)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: (response) => {
-              if (response.isSuccess) {
-                this.notificationService.showSuccess('User created successfully');
-                this.closeUserModal();
-                this.loadUsers();
-              } else {
-                this.notificationService.showError('Failed to create user: ' + response.errors.join(', '));
-              }
+            next: () => {
+              this.notificationService.showSuccess('User created successfully');
+              this.closeUserModal();
+              this.loadUsers();
             },
             error: (error) => {
               this.notificationService.showError('Error creating user: ' + error.message);
@@ -998,11 +994,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.showRoleModal = true;
   }
 
-  editRole(role: Role): void {
+  editRole(role: RoleManagementDto): void {
     this.editingRole = role;
     this.roleForm.patchValue({
-      name: role.name,
-      description: role.description
+      name: role.name
     });
     this.showRoleModal = true;
   }
@@ -1021,21 +1016,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         // Update role
         const request: UpdateRoleRequest = {
           id: this.editingRole.id,
-          name: formValue.name,
-          description: formValue.description
+          name: formValue.name
         };
 
         this.userManagementService.updateRole(request)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: (response) => {
-              if (response.isSuccess) {
-                this.notificationService.showSuccess('Role updated successfully');
-                this.closeRoleModal();
-                this.loadRoles();
-              } else {
-                this.notificationService.showError('Failed to update role: ' + response.errors.join(', '));
-              }
+            next: () => {
+              this.notificationService.showSuccess('Role updated successfully');
+              this.closeRoleModal();
+              this.loadRoles();
             },
             error: (error) => {
               this.notificationService.showError('Error updating role: ' + error.message);
@@ -1044,21 +1034,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       } else {
         // Create role
         const request: CreateRoleRequest = {
-          name: formValue.name,
-          description: formValue.description
+          name: formValue.name
         };
 
         this.userManagementService.createRole(request)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: (response) => {
-              if (response.isSuccess) {
-                this.notificationService.showSuccess('Role created successfully');
-                this.closeRoleModal();
-                this.loadRoles();
-              } else {
-                this.notificationService.showError('Failed to create role: ' + response.errors.join(', '));
-              }
+            next: () => {
+              this.notificationService.showSuccess('Role created successfully');
+              this.closeRoleModal();
+              this.loadRoles();
             },
             error: (error) => {
               this.notificationService.showError('Error creating role: ' + error.message);
@@ -1069,28 +1054,25 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   // User Actions
-  manageUserRoles(user: User): void {
+  manageUserRoles(user: UserManagementDto): void {
     // Open user edit modal with focus on roles
     this.editUser(user);
   }
 
-  lockUser(user: User): void {
+  lockUser(user: UserManagementDto): void {
     if (confirm(`Are you sure you want to lock out ${user.username}?`)) {
       const request: UserLockoutRequest = {
         userId: user.id,
-        lockoutEnd: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)) // 30 days
+        lockoutEnd: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)), // 30 days
+        reason: 'Locked via admin panel'
       };
 
-      this.userManagementService.lockoutUser(request)
+      this.userManagementService.lockUser(request)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            if (response.isSuccess) {
-              this.notificationService.showSuccess('User locked out successfully');
-              this.loadUsers();
-            } else {
-              this.notificationService.showError('Failed to lock user: ' + response.errors.join(', '));
-            }
+          next: () => {
+            this.notificationService.showSuccess('User locked out successfully');
+            this.loadUsers();
           },
           error: (error) => {
             this.notificationService.showError('Error locking user: ' + error.message);
@@ -1103,13 +1085,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.userManagementService.unlockUser(userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          if (response.isSuccess) {
-            this.notificationService.showSuccess('User unlocked successfully');
-            this.loadUsers();
-          } else {
-            this.notificationService.showError('Failed to unlock user: ' + response.errors.join(', '));
-          }
+        next: () => {
+          this.notificationService.showSuccess('User unlocked successfully');
+          this.loadUsers();
         },
         error: (error) => {
           this.notificationService.showError('Error unlocking user: ' + error.message);
@@ -1117,41 +1095,19 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  confirmEmail(userId: string): void {
-    this.userManagementService.confirmUserEmail(userId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response.isSuccess) {
-            this.notificationService.showSuccess('Email confirmed successfully');
-            this.loadUsers();
-          } else {
-            this.notificationService.showError('Failed to confirm email: ' + response.errors.join(', '));
-          }
-        },
-        error: (error) => {
-          this.notificationService.showError('Error confirming email: ' + error.message);
-        }
-      });
-  }
-
-  resetPassword(user: User): void {
+  resetPassword(user: UserManagementDto): void {
     const newPassword = prompt(`Enter new password for ${user.username}:`);
     if (newPassword) {
-      const request: PasswordResetRequest = {
+      const request: ChangePasswordRequest = {
         userId: user.id,
         newPassword: newPassword
       };
 
-      this.userManagementService.resetUserPassword(request)
+      this.userManagementService.changePassword(request)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            if (response.isSuccess) {
-              this.notificationService.showSuccess('Password reset successfully');
-            } else {
-              this.notificationService.showError('Failed to reset password: ' + response.errors.join(', '));
-            }
+          next: () => {
+            this.notificationService.showSuccess('Password reset successfully');
           },
           error: (error) => {
             this.notificationService.showError('Error resetting password: ' + error.message);
@@ -1160,18 +1116,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteUser(user: User): void {
+  deleteUser(user: UserManagementDto): void {
     if (confirm(`Are you sure you want to delete ${user.username}? This action cannot be undone.`)) {
       this.userManagementService.deleteUser(user.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            if (response.isSuccess) {
-              this.notificationService.showSuccess('User deleted successfully');
-              this.loadUsers();
-            } else {
-              this.notificationService.showError('Failed to delete user: ' + response.errors.join(', '));
-            }
+          next: () => {
+            this.notificationService.showSuccess('User deleted successfully');
+            this.loadUsers();
           },
           error: (error) => {
             this.notificationService.showError('Error deleting user: ' + error.message);
@@ -1180,18 +1132,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteRole(role: Role): void {
+  deleteRole(role: RoleManagementDto): void {
     if (confirm(`Are you sure you want to delete the role "${role.name}"? This action cannot be undone.`)) {
       this.userManagementService.deleteRole(role.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            if (response.isSuccess) {
-              this.notificationService.showSuccess('Role deleted successfully');
-              this.loadRoles();
-            } else {
-              this.notificationService.showError('Failed to delete role: ' + response.errors.join(', '));
-            }
+          next: () => {
+            this.notificationService.showSuccess('Role deleted successfully');
+            this.loadRoles();
           },
           error: (error) => {
             this.notificationService.showError('Error deleting role: ' + error.message);

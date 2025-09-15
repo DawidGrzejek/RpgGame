@@ -20,6 +20,25 @@ namespace RpgGame.Infrastructure.Persistence.EFCore
         {
             base.OnModelCreating(builder);
             builder.HasDefaultSchema("AspNetIdentity");
+            
+            // Configure all DateTime properties to use datetime2 by default
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?) || property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+                    {
+                        if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+                        {
+                            property.SetColumnType("datetimeoffset");
+                        }
+                        else
+                        {
+                            property.SetColumnType("datetime2");
+                        }
+                    }
+                }
+            }
         }
 
         

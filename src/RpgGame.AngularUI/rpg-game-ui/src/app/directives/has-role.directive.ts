@@ -42,10 +42,12 @@ export class HasRoleDirective implements OnInit, OnDestroy {
   }
 
   private updateView(): void {
+    // Always clear the view container first to prevent duplicates
+    this.viewContainer.clear();
+
     const user = this.authService.getCurrentUser();
 
     if (!user || !this.requiredRoles.length) {
-      this.viewContainer.clear();
       return;
     }
 
@@ -55,8 +57,6 @@ export class HasRoleDirective implements OnInit, OnDestroy {
 
     if (hasRole) {
       this.viewContainer.createEmbeddedView(this.templateRef);
-    } else {
-      this.viewContainer.clear();
     }
   }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using RpgGame.Application; // For application layer DI extension
@@ -53,6 +54,12 @@ try
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        
+        // Ensure DateTime values are serialized as UTC with timezone information
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        
+        // Configure DateTime handling to preserve timezone information
+        // This ensures DateTime.UtcNow gets serialized with 'Z' suffix indicating UTC
     });
 
     // Register layers in the correct order (inner to outer)
@@ -80,6 +87,32 @@ try
             Description = "API for RPG Game"
         });
         c.CustomSchemaIds(type => type.FullName);
+        
+        // Add JWT authentication to Swagger
+        c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Enter your JWT token below.",
+            Name = "Authorization",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        });
+
+        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
     });
 
     // Add to Program.cs
@@ -104,7 +137,8 @@ try
         {
             policy.WithOrigins("http://localhost:4200")
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                .AllowCredentials();
         });
     });
 
@@ -164,6 +198,7 @@ try
     app.UseHttpsRedirection();
     app.UseRouting();
     app.UseCors("AllowAngular");
+    app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
 

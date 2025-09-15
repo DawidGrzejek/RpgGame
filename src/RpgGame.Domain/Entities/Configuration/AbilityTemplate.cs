@@ -11,25 +11,25 @@ namespace RpgGame.Domain.Entities.Configuration
     /// </summary>
     public class AbilityTemplate : DomainEntity
     {
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public AbilityType AbilityType { get; private set; }
-        public int ManaCost { get; private set; }
-        public int Cooldown { get; private set; }
+        public string Name { get; protected set; }
+        public string Description { get; protected set; }
+        public AbilityType AbilityType { get; protected set; }
+        public int ManaCost { get; protected set; }
+        public int Cooldown { get; protected set; }
         
         // Flexible effect system - no more hard-coded abilities!
-        public List<AbilityEffect> Effects { get; private set; }
+        public List<AbilityEffect> Effects { get; protected set; }
         
         // Targeting information
-        public TargetType TargetType { get; private set; }
-        public int Range { get; private set; }
+        public TargetType TargetType { get; protected set; }
+        public int Range { get; protected set; }
         
         // Visual/Audio configuration
-        public string AnimationName { get; private set; }
-        public string SoundEffect { get; private set; }
+        public string AnimationName { get; protected set; }
+        public string SoundEffect { get; protected set; }
         
         // Requirements to use this ability
-        public Dictionary<string, object> Requirements { get; private set; }
+        public Dictionary<string, object> Requirements { get; protected set; }
 
         private AbilityTemplate() 
         {

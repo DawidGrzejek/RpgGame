@@ -54,18 +54,41 @@ export class AuthService {
    * Initialize authentication state from local storage
    */
   private initializeAuthState(): void {
+    console.log('🚀 AuthService.initializeAuthState() called');
     try {
       const accessToken = localStorage.getItem(this.storageKeys.accessToken);
       const refreshToken = localStorage.getItem(this.storageKeys.refreshToken);
       const userJson = localStorage.getItem(this.storageKeys.user);
       const expiresAtStr = localStorage.getItem(this.storageKeys.expiresAt);
 
+      console.log('📱 Local storage contents:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        hasUser: !!userJson,
+        hasExpiry: !!expiresAtStr,
+        tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'null'
+      });
+
       if (accessToken && refreshToken && userJson && expiresAtStr) {
         const user: UserInfo = JSON.parse(userJson);
+        
+        // Parse the expiry date ensuring proper timezone handling
         const expiresAt = new Date(expiresAtStr);
+        const now = new Date();
+
+        console.log('⏰ Token expiry check:', {
+          storedExpiresAtStr: expiresAtStr,
+          expiresAtUTC: expiresAt.toISOString(),
+          expiresAtLocal: expiresAt.toLocaleString(),
+          nowUTC: now.toISOString(),
+          nowLocal: now.toLocaleString(),
+          isValid: expiresAt > now,
+          timeDifferenceMinutes: Math.round((expiresAt.getTime() - now.getTime()) / (1000 * 60))
+        });
 
         // Check if token is still valid
         if (expiresAt > new Date()) {
+          console.log('✅ Token is valid, updating auth state');
           this.updateAuthState({
             isAuthenticated: true,
             isLoading: false,
@@ -76,12 +99,15 @@ export class AuthService {
             error: null
           });
         } else {
+          console.log('⚠️ Token expired, attempting refresh');
           // Token expired, try to refresh
           this.refreshTokenSilently();
         }
+      } else {
+        console.log('❌ Missing auth data in localStorage');
       }
     } catch (error) {
-      console.error('Error initializing auth state:', error);
+      console.error('💥 Error initializing auth state:', error);
       this.logout();
     }
   }
@@ -233,7 +259,17 @@ export class AuthService {
    * Get access token
    */
   getAccessToken(): string | null {
-    return this.authStateSubject.value.accessToken;
+    const token = this.authStateSubject.value.accessToken;
+    console.log('🔑 AuthService.getAccessToken() called:', {
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'null',
+      authState: {
+        isAuthenticated: this.authStateSubject.value.isAuthenticated,
+        hasUser: !!this.authStateSubject.value.user,
+        tokenExpiry: this.authStateSubject.value.expiresAt
+      }
+    });
+    return token;
   }
 
   /**
@@ -277,9 +313,19 @@ export class AuthService {
    * Handle successful authentication
    */
   private handleAuthSuccess(response: AuthResponse): void {
+    // Parse the expiry date - ensure it's treated as UTC since the server sends UTC time
     const expiresAt = new Date(response.expiresAt);
+    
+    console.log('🕐 Handling auth success - timezone info:', {
+      serverExpiresAt: response.expiresAt,
+      parsedExpiresAt: expiresAt.toISOString(),
+      parsedLocal: expiresAt.toLocaleString(),
+      serverIsUTC: response.expiresAt.toString().includes('Z') || response.expiresAt.toString().includes('+'),
+      browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezoneOffset: new Date().getTimezoneOffset()
+    });
 
-    // Store in localStorage
+    // Store in localStorage (always store as ISO string for consistency)
     localStorage.setItem(this.storageKeys.accessToken, response.accessToken);
     localStorage.setItem(this.storageKeys.refreshToken, response.refreshToken);
     localStorage.setItem(this.storageKeys.user, JSON.stringify(response.user));

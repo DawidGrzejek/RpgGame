@@ -67,7 +67,7 @@ import { IsGuestDirective } from '../../../directives/is-guest.directive';
               </div>
             </div>
 
-            <!-- Moderator Links -->
+            <!-- Moderation Links - Available to both Admin and Moderator users -->
             <ng-container *appHasRole="['Admin', 'Moderator']">
               <a routerLink="/moderation" routerLinkActive="active" class="nav-link">
                 <span class="nav-icon">🛡️</span>

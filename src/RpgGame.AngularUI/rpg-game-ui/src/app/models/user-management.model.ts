@@ -1,21 +1,24 @@
 // User Management Models
-export interface User {
+export interface UserManagementDto {
   id: string;
   username: string;
   email: string;
   emailConfirmed: boolean;
-  roles: string[];
-  isLockedOut: boolean;
+  lockoutEnabled: boolean;
   lockoutEnd?: Date;
+  accessFailedCount: number;
+  roles: string[];
   createdAt: Date;
   lastLoginAt?: Date;
+  isActive: boolean;
 }
 
-export interface Role {
+export interface RoleManagementDto {
   id: string;
   name: string;
-  description?: string;
-  usersCount: number;
+  normalizedName: string;
+  userCount: number;
+  createdAt: Date;
 }
 
 export interface CreateUserRequest {
@@ -23,24 +26,28 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   roles: string[];
+  emailConfirmed: boolean;
+  lockoutEnabled: boolean;
 }
 
 export interface UpdateUserRequest {
   id: string;
   username: string;
   email: string;
+  emailConfirmed: boolean;
+  lockoutEnabled: boolean;
+  lockoutEnd?: Date;
   roles: string[];
+  isActive: boolean;
 }
 
 export interface CreateRoleRequest {
   name: string;
-  description?: string;
 }
 
 export interface UpdateRoleRequest {
   id: string;
   name: string;
-  description?: string;
 }
 
 export interface UserRoleRequest {
@@ -50,12 +57,23 @@ export interface UserRoleRequest {
 
 export interface UserLockoutRequest {
   userId: string;
-  lockoutEnd?: Date; // If null, unlocks user
+  lockoutEnd?: Date;
+  reason: string;
 }
 
-export interface PasswordResetRequest {
+export interface ChangePasswordRequest {
   userId: string;
   newPassword: string;
+}
+
+export interface AssignRoleRequest {
+  userId: string;
+  roleName: string;
+}
+
+export interface RemoveRoleRequest {
+  userId: string;
+  roleName: string;
 }
 
 export interface ApiResponse<T> {

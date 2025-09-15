@@ -278,3 +278,119 @@ public bool IsAlive => Stats.IsAlive; // Delegate to value object
 - Test projects follow naming convention: `RpgGame.[LayerName]Tests`
 - **Test Value Objects**: Focus on pure calculations and immutability
 - **Test Entities**: Focus on business behaviors and event generation
+
+## Documentation Maintenance Guidelines
+
+### Critical Documentation Requirements
+**MANDATORY**: All documentation agents MUST follow these requirements when updating project documentation:
+
+#### Timestamp Requirements
+1. **Development-Backlog.md**:
+   - Update "Last Updated" field with current date and time: `YYYY-MM-DD HH:MM`
+   - Each new task/completion MUST have a dated header: `## ✅ COMPLETED - YYYY-MM-DD HH:MM` or `## 📋 TASKS - YYYY-MM-DD HH:MM`
+   - Individual tasks MUST include both Created and Completed timestamps
+
+2. **Readme.md**:
+   - Update "Last Updated" field in Recent Updates section with current date and time
+   - Each update entry MUST include date: `### Title - YYYY-MM-DD HH:MM`
+   - Group related changes under single dated section
+
+#### Content Organization
+- **Separate sections by date**: Each development session gets its own dated section
+- **Clear hierarchical structure**: Use consistent header levels and formatting  
+- **Descriptive change summaries**: Include what was changed, why, and impact
+- **Technical details**: Document architectural decisions and their rationale
+
+#### Maintenance Triggers
+Documentation agents MUST proactively update documentation when:
+- New domain entities or services are created
+- Architectural patterns are changed or enhanced  
+- Build errors are resolved with significant changes
+- Major features are completed or refactored
+- Clean Architecture or DDD boundaries are modified
+
+#### Quality Standards
+- **Accurate timestamps**: Use current date/time for all updates
+- **Comprehensive coverage**: Document all significant changes
+- **Clear navigation**: Enable easy scrolling and finding of specific changes
+- **Professional formatting**: Consistent markdown, proper emoji usage, clear structure
+
+## Agent Usage Guidelines
+
+### Mandatory Agent Usage
+**CRITICAL**: Always use the appropriate specialized agent when tasks match their expertise:
+
+#### Required Agent Usage Scenarios
+1. **testing-specialist**: MANDATORY for ALL testing tasks
+   - Creating/updating unit tests, integration tests, performance tests
+   - Testing event sourcing, snapshots, CQRS handlers
+   - Validating DDD principles through tests
+   - Any template-driven architecture testing
+
+2. **documentation-maintainer**: MANDATORY after significant changes
+   - New features, entities, services added
+   - Architectural refactoring or Clean Architecture changes
+   - Major bug fixes or build error resolutions
+   - Development milestone completions
+   - **NEW**: Comprehensive test suite additions (>20 new tests)
+   - **NEW**: Quality milestones achieved (e.g., 100+ tests passing)
+   - **NEW**: Performance testing or major code coverage improvements
+
+3. **architect**: MANDATORY for architecture decisions
+   - Adding new entities, design patterns, system structure changes
+   - Technology choices and architectural refactoring
+   - Clean Architecture, DDD, CQRS, Event Sourcing decisions
+   - Cross-cutting concerns and structural modifications
+
+4. **angular-ui-developer**: For frontend development
+   - Angular components, services, reactive programming
+   - UI/UX improvements and modern web patterns
+
+### Agent Usage Best Practices
+- **Use multiple agents concurrently** when possible for optimal performance
+- **Provide detailed task descriptions** since agent invocations are stateless
+- **Specify expected outputs** clearly for each agent
+- **Trust agent outputs** and incorporate their recommendations
+
+### Proactive Documentation Protocol
+**CRITICAL**: After completing any significant work, I must AUTOMATICALLY:
+
+1. **Assess Documentation Impact**: Determine if the work meets any documentation triggers
+2. **Use documentation-maintainer**: If work qualifies, proactively use the agent
+3. **Provide Status Update**: Always report documentation status to user
+
+#### Documentation Triggers (Auto-Check Required):
+- ✅ Major code changes (new entities, services, components)
+- ✅ Comprehensive testing work (>20 new tests, quality milestones)
+- ✅ Architectural changes or refactoring completion  
+- ✅ Feature implementation or API changes
+- ✅ Build fixes or performance improvements
+- ✅ Development milestones achieved
+
+#### Status Report Format:
+```markdown
+## 📚 Documentation Status
+- ✅ **Updated**: Documentation has been updated to reflect recent changes
+- ℹ️ **Current**: Documentation is up-to-date, no changes needed
+- ⚠️ **Pending**: Significant changes made, updating documentation now...
+```
+
+**No More Reminders Needed**: I will proactively check and update documentation after every significant development task.
+
+## File Change Documentation
+
+### Required File Change Summary
+**MANDATORY**: At the end of any development session that modifies files, provide a simple list format:
+
+```
+## Files Modified:
+- `file/path/name.ext`, created
+- `file/path/name.ext`, edited  
+- `file/path/name.ext`, removed
+```
+
+### Change Documentation Standards
+- **List all files** that were created, modified, or removed
+- **Use relative paths** from project root when possible
+- **Simple action verbs**: created, edited, removed
+- **Chronological order** when multiple change sessions occur

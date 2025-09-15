@@ -364,6 +364,9 @@ FodyWeavers.xsd
 /src/RpgGame.AngularUI/rpg-game-ui/.gitignore
 /src/RpgGame.AngularUI/rpg-game-ui/.vscode
 
+# IDE and tool settings
+.claude/
+
 # Configuration files with sensitive data
 appsettings.json
 appsettings.Production.json

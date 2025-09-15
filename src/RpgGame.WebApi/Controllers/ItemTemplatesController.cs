@@ -15,7 +15,7 @@ namespace RpgGame.WebApi.Controllers
 {
     [ApiController]
     [Authorize(Policy = "GameMaster")]
-    [Route("api/v1/item-templates")]
+    [Route("api/v{version:apiVersion}/item-templates")]
     public class ItemTemplatesController : ControllerBase
     {
         private readonly IMediator _mediator;

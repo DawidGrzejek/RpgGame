@@ -12,26 +12,26 @@ namespace RpgGame.Domain.Entities.Configuration
     /// </summary>
     public class CharacterTemplate : DomainEntity
     {
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public CharacterType CharacterType { get; private set; }
-        public NPCBehavior? NPCBehavior { get; private set; }
-        public PlayerClass? PlayerClass { get; private set; }
+        public string Name { get; protected set; }
+        public string Description { get; protected set; }
+        public CharacterType CharacterType { get; protected set; }
+        public NPCBehavior? NPCBehavior { get; protected set; }
+        public PlayerClass? PlayerClass { get; protected set; }
 
         // Base stats that will be applied to characters
-        public CharacterStats BaseStats { get; private set; }
+        public CharacterStats BaseStats { get; protected set; }
 
         // Configuration data (replaces hard-coded special abilities)
-        public Dictionary<string, object> ConfigurationData { get; private set; }
+        public Dictionary<string, object> ConfigurationData { get; protected set; }
 
         // References to ability templates
-        public List<Guid> AbilityIds { get; private set; }
+        public List<Guid> AbilityIds { get; protected set; }
 
         // Loot table for enemies
-        public List<Guid> LootTableIds { get; private set; }
+        public List<Guid> LootTableIds { get; protected set; }
 
         // AI behavior data for NPCs
-        public Dictionary<string, object> BehaviorData { get; private set; }
+        public Dictionary<string, object> BehaviorData { get; protected set; }
 
         // Private constructor for EF Core
         private CharacterTemplate()
