@@ -100,6 +100,11 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                     .OrderBy(ct => ct.Name)
                     .ToListAsync();
 
+                if (!templates.Any())
+                {
+                    return OperationResult<IEnumerable<CharacterTemplate>>.NotFound("PlayerClass", playerClass.ToString());
+                }
+
                 return OperationResult<IEnumerable<CharacterTemplate>>.Success(templates);
             }
             catch (Exception ex)
@@ -126,19 +131,18 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                 }
 
                 // Check if a template with the same name already exists
-                var existingTemplate = await _dbSet
-                    .FirstOrDefaultAsync(ct => ct.Name.ToLower() == characterTemplate.Name.ToLower());
+                var existingTemplate = await GetByNameAsync(characterTemplate.Name);
 
-                if (existingTemplate != null)
-                {
+                if (existingTemplate.Succeeded)
                     return OperationResult<CharacterTemplate>.Failure(
                         OperationError.Conflict($"A character template with the name '{characterTemplate.Name}' already exists."));
-                }
+                
+                var result = await base.AddAsync(characterTemplate);
 
-                await _dbSet.AddAsync(characterTemplate);
-                await _context.SaveChangesAsync();
+                if (result.Succeeded)
+                    return OperationResult<CharacterTemplate>.Success(characterTemplate);
 
-                return OperationResult<CharacterTemplate>.Success(characterTemplate);
+                return OperationResult<CharacterTemplate>.Failure(result.Errors.ToArray());
             }
             catch (Exception ex)
             {
@@ -154,30 +158,26 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             try
             {
                 if (characterTemplate == null)
-                {
                     return OperationResult<CharacterTemplate>.Failure(
-                        OperationError.ValidationFailed(nameof(characterTemplate), "Character template cannot be null."));
-                }
+                        OperationError.ValidationFailed(nameof(characterTemplate), "Character template cannot be null."));                
 
-                var existingTemplate = await _dbSet.FindAsync(characterTemplate.Id);
-                if (existingTemplate == null)
+                var existingTemplate = await GetByIdAsync(characterTemplate.Id);
+                if (!existingTemplate.Succeeded || existingTemplate.Data == null)
                 {
                     return OperationResult<CharacterTemplate>.NotFound("CharacterTemplate", characterTemplate.Id.ToString());
                 }
 
                 // Check if another template with the same name exists (excluding current template)
-                var duplicateTemplate = await _dbSet
-                    .FirstOrDefaultAsync(ct => ct.Name.ToLower() == characterTemplate.Name.ToLower()
-                                            && ct.Id != characterTemplate.Id);
-
-                if (duplicateTemplate != null)
+                var duplicateTemplate = await GetByNameAsync(characterTemplate.Name);
+                if (duplicateTemplate.Succeeded && duplicateTemplate.Data.Id != characterTemplate.Id)
                 {
                     return OperationResult<CharacterTemplate>.Failure(
                         OperationError.Conflict($"Another character template with the name '{characterTemplate.Name}' already exists."));
                 }
 
-                _dbSet.Update(characterTemplate);
-                await _context.SaveChangesAsync();
+                var result = await base.UpdateAsync(characterTemplate);
+                if (!result.Succeeded)
+                    return OperationResult<CharacterTemplate>.Failure(result.Errors.ToArray());
 
                 return OperationResult<CharacterTemplate>.Success(characterTemplate);
             }
@@ -200,14 +200,15 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                         OperationError.ValidationFailed(nameof(characterTemplate), "Character template cannot be null."));
                 }
 
-                var existingTemplate = await _dbSet.FindAsync(characterTemplate.Id);
-                if (existingTemplate == null)
+                var existingTemplate = await GetByIdAsync(characterTemplate.Id);
+                if (!existingTemplate.Succeeded || existingTemplate.Data == null)
                 {
                     return OperationResult.NotFound("CharacterTemplate", characterTemplate.Id.ToString());
                 }
 
-                _dbSet.Remove(existingTemplate);
-                await _context.SaveChangesAsync();
+                var result = await base.DeleteAsync(existingTemplate.Data);
+                if (!result.Succeeded)
+                    return OperationResult.Failure(result.Errors.ToArray());
 
                 return OperationResult.Success();
             }
@@ -235,14 +236,13 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                         OperationError.ValidationFailed(nameof(id), "Id cannot be empty."));
                 }
 
-                var template = await _dbSet.FindAsync(id);
-                if (template == null)
-                {
+                var template = await GetByIdAsync(id);
+                if (!template.Succeeded || template.Data == null)
                     return OperationResult.NotFound("CharacterTemplate", id.ToString());
-                }
 
-                _dbSet.Remove(template);
-                await _context.SaveChangesAsync();
+                var result = await base.DeleteAsync(template.Data);
+                if (!result.Succeeded)
+                    return OperationResult.Failure(result.Errors.ToArray());
 
                 return OperationResult.Success();
             }
