@@ -111,11 +111,10 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                     return OperationResult<AbilityTemplate>.Failure(OperationError.ValidationFailed("Name", $"An ability with the name '{abilityTemplate.Name}' already exists."));
 
                 var result = await base.AddAsync(abilityTemplate);
+                if (!result.Succeeded)
+                    return OperationResult<AbilityTemplate>.Failure(result.Errors.ToArray());
 
-                if (result.Succeeded)
-                    return OperationResult<AbilityTemplate>.Success(abilityTemplate);
-
-                return OperationResult<AbilityTemplate>.Failure(result.Errors.ToArray());
+                return OperationResult<AbilityTemplate>.Success(abilityTemplate);
             }
             catch (Exception ex)
             {
@@ -132,7 +131,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
 
                 var existingTemplate = await GetByIdAsync(abilityTemplate.Id);
                 if (!existingTemplate.Succeeded || existingTemplate.Data == null)
-                    return OperationResult<AbilityTemplate>.Failure(OperationError.NotFound("Id", $"No ability with ID '{abilityTemplate.Id}' exists."));
+                    return OperationResult<AbilityTemplate>.NotFound("AbilityTemplate", abilityTemplate.Id.ToString());
 
                 var duplicateTemplate = await GetByNameAsync(abilityTemplate.Name);
 
@@ -140,11 +139,10 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                     return OperationResult<AbilityTemplate>.Failure(OperationError.ValidationFailed("Name", $"An ability with the name '{abilityTemplate.Name}' already exists."));
 
                 var result = await base.UpdateAsync(abilityTemplate);
+                if (!result.Succeeded)
+                    return OperationResult<AbilityTemplate>.Failure(result.Errors.ToArray());
 
-                if (result.Succeeded)
-                    return OperationResult<AbilityTemplate>.Success(abilityTemplate);
-
-                return OperationResult<AbilityTemplate>.Failure(result.Errors.ToArray());
+                return OperationResult<AbilityTemplate>.Success(abilityTemplate);
             }
             catch (Exception ex)
             {
