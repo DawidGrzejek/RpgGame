@@ -16,6 +16,8 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
         {
         }
 
+        #region Read Operations
+
         public async Task<OperationResult<IEnumerable<ItemTemplate>>> GetByTypeAsync(ItemType itemType)
         {
             try
@@ -24,6 +26,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                     .Where(i => i.ItemType == itemType)
                     .OrderBy(i => i.Name)
                     .ToListAsync();
+
                 return OperationResult<IEnumerable<ItemTemplate>>.Success(items);
             }
             catch (Exception ex)
@@ -37,7 +40,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             try
             {
                 if (string.IsNullOrWhiteSpace(name))
-                    return OperationResult<IEnumerable<ItemTemplate>>.Success(Enumerable.Empty<ItemTemplate>());
+                    throw new ArgumentNullException(nameof(name));
 
                 var items = await _dbSet
                     .Where(i => i.Name.Contains(name))
@@ -103,6 +106,10 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
         {
             try
             {
+                if (minValue < 0 || maxValue < 0 || minValue > maxValue)
+                    return OperationResult<IEnumerable<ItemTemplate>>.Failure(
+                        OperationError.ValidationFailed("Invalid value range.", "Minimum and maximum values must be non-negative, and minimum cannot exceed maximum."));
+
                 var items = await _dbSet
                     .Where(i => i.Value >= minValue && i.Value <= maxValue)
                     .OrderBy(i => i.Value)
@@ -120,7 +127,7 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
             try
             {
                 if (string.IsNullOrWhiteSpace(name))
-                    return OperationResult<bool>.Success(false);
+                    throw new ArgumentNullException(nameof(name));
 
                 var exists = await _dbSet
                     .AnyAsync(i => i.Name.ToLower() == name.ToLower());
@@ -131,5 +138,11 @@ namespace RpgGame.Infrastructure.Persistence.Repositories
                 return OperationResult<bool>.Failure(new OperationError("Failed to check if item exists by name.", ex.Message, ex.InnerException?.Message ?? string.Empty));
             }
         }
+
+        #endregion
+
+        #region Write Operations
+
+        #endregion
     }
 }
