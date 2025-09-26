@@ -76,6 +76,17 @@ namespace RpgGame.Domain.Entities.Configuration
             Requirements[key] = value;
         }
 
+        public void UpdateDetails(string name, string description, AbilityType abilityType, TargetType targetType, int manaCost = 0, int cooldown = 0, int range = 1)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            AbilityType = abilityType;
+            TargetType = targetType;
+            ManaCost = Math.Max(0, manaCost);
+            Cooldown = Math.Max(0, cooldown);
+            Range = Math.Max(1, range);
+        }
+
         public bool MeetsRequirements(Dictionary<string, object> characterData)
         {
             foreach (var requirement in Requirements)
