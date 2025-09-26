@@ -20,6 +20,8 @@ using RpgGame.Infrastructure.Services.Authentication;
 using RpgGame.Application.Interfaces.Persistence;
 using RpgGame.Application.Services;
 using RpgGame.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using RpgGame.Infrastructure.Persistence;
 
 
 namespace RpgGame.Infrastructure
@@ -34,13 +36,23 @@ namespace RpgGame.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register DbContext with SQL Server
-            services.AddDbContext<GameDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            // Configure shared SQL Server connection with custom execution strategy
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            // Add ASP.NET Core Identity services with SQL Server
+            Action<SqlServerDbContextOptionsBuilder> configureSqlServer = sqlOptions =>
+                sqlOptions.ExecutionStrategy(dependencies => new CustomSqlServerRetryingExecutionStrategy(
+                    dependencies,
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null));
+
+            // Register DbContext with shared configuration
+            services.AddDbContext<GameDbContext>(options =>
+                options.UseSqlServer(connectionString, configureSqlServer));
+
+            // Add ASP.NET Core Identity services with shared configuration
             services.AddDbContext<IdentityDataContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(connectionString, configureSqlServer));
             
             // Configure ASP.NET Core Identity
             services.AddIdentity<IdentityUser, IdentityRole>(options =>
