@@ -17,7 +17,8 @@ namespace RpgGame.Application.Events.Handlers.EntityTemplates
 
         public async Task<IEnumerable<ItemTemplate>> Handle(GetAllItemTemplatesQuery request, CancellationToken cancellationToken)
         {
-            return await _repository.GetAllAsync();
+            var result = await _repository.GetAllAsync();
+            return result.Data ?? Enumerable.Empty<ItemTemplate>();
         }
     }
 
