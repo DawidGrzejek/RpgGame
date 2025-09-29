@@ -24,7 +24,10 @@
       "Bash(powershell:*)",
       "Bash(sqllocaldb info:*)",
       "Bash(sqllocaldb create:*)",
-      "Bash(sqllocaldb:*)"
+      "Bash(sqllocaldb:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
